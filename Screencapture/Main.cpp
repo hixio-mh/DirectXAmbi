@@ -87,7 +87,6 @@ int main()
 	pointer = Scherm.GeefLedPointer();	//Koppel de led bitstream aan de pointer
 	while (exit == false)
 	{
-		SP->WriteData((char*)pointer, Scherm.geefLeds() * 3);	//Stuur alle data weg
 		clock_t begin = clock();
 
 		if (GetAsyncKeyState(VK_ESCAPE))						//Als escape is ingedrukt zet exit true
@@ -98,14 +97,18 @@ int main()
 
 		Scherm.Bereken();				//Bereken alle led kleuren
 
+		SP->WriteData((char*)pointer, Scherm.geefLeds() * 3);	//Stuur alle data weg
+
+
+
 		while (Rx_buffer[0] != '1')		//Wacht tot arduino weer klaar is
 		{
 			SP->ReadData(Rx_buffer, 100);
 		}
 		Rx_buffer[0] = '0';
 
-		clock_t end = clock(); 
-		std::cout << "FPS: " << CLOCKS_PER_SEC / double(end - begin) << std::endl;	//Print de FPS uit
+		//clock_t end = clock(); 
+		//std::cout << "FPS: " << double(end - begin)/CLOCKS_PER_SEC << std::endl;	//Print de FPS uit
 	}
 	return 0;
 }

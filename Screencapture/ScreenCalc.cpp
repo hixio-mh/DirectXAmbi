@@ -101,7 +101,6 @@ void ScreenCalc::Gemiddelde(UINT8 *Led, int TopLeftX, int TopLeftY, int BottomRi
 	int j = 0;
 	int r = 0, g = 0, b = 0;
 	int y, x;
-	int skipped = 0;
 
 	for (x = TopLeftX; x < BottomRightX; x++)
 	{
@@ -109,30 +108,29 @@ void ScreenCalc::Gemiddelde(UINT8 *Led, int TopLeftX, int TopLeftY, int BottomRi
 		{
 			//Als het bijna puur zwart is sla je hem over bij gemiddelde berekening
 			//std::cout << (unsigned int)(((PixelData[x + y*Hres] >> 0) & 0xFF)) << '/' << j << std::endl;
-			if ((((PixelData[x + y*Hres] >> 0) & 0xFF) < 0x04) && (((PixelData[x + y*Hres] >> 8) & 0xFF) < 0x04) && (((PixelData[x + y*Hres] >> 16) & 0xFF) < 0x04))
+			if ((((PixelData[x + y*Hres] >> 0) & 0xFF) < 0x20) && (((PixelData[x + y*Hres] >> 8) & 0xFF) < 0x20) && (((PixelData[x + y*Hres] >> 16) & 0xFF) < 0x20))
 			{
-				skipped++;
 			}
 			else
 			{
 				//std::cout << (PixelData[x + y*Hres]&0x000000FF) << ',' << ((PixelData[x + y*Hres] >> 0) & 0xFF) << std::endl;
 				//Sleep(100);
-				r += ((PixelData[x + y*Hres] >> 0) & 0xFF);
+				b += ((PixelData[x + y*Hres] >> 0) & 0xFF);
 				g += ((PixelData[x + y*Hres] >> 8) & 0xFF);
-				b += ((PixelData[x + y*Hres] >> 16) & 0xFF);
+				r += ((PixelData[x + y*Hres] >> 16) & 0xFF);
+				j++;
 				
 			}
-			j++;
+			
 		}
 	}
-	int temp = ((j)-skipped);
-	if (temp == 0)
-		temp = 1;
+	if (j == 0)
+		j = 1;
 	//std::cout << r << '/' << temp << std::endl;
 
-	Led[0] = r / temp;
-	Led[1] = g / temp;
-	Led[2] = b / temp;
+	Led[0] = g / j;
+	Led[1] = r / j;
+	Led[2] = b / j;
 	
 }
 
