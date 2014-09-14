@@ -21,7 +21,7 @@ public:
 	UINT8 *GeefLedPointer();
 
 private:
-	void Gemiddelde(UINT8 *Led, Grid &Blok);
+	void Gemiddelde(UINT8 *Led, int TopLeftX, int TopLeftY, int BottomLeftY, int BottomRightX);
 
 	float Hoogte;
 	float Lengte;
