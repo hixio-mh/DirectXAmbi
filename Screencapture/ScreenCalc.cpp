@@ -1,4 +1,5 @@
 #include "ScreenCalc.h"
+#include <iostream>
 
 ScreenCalc::ScreenCalc(float Diago, UINT32 *DataSet, int hres, int vres, int BlockH, int BlockV, int ledspm) :Hres(hres), Vres(vres), LedData(NULL), BlockDepthHori(BlockH), BlockDepthVert(BlockV), Blok(NULL), LedsPm(ledspm)
 {
@@ -15,7 +16,6 @@ ScreenCalc::~ScreenCalc()
 	//Ruim alles netjes op
 	delete PixelData;
 	delete LedData;
-	delete Blok;
 
 	PixelData = NULL;
 	LedData = NULL;
@@ -31,19 +31,19 @@ void ScreenCalc::Bereken_Grid()
 		delete LedData;
 		LedData = NULL;
 	}
-	
+
 	if (Blok != NULL)
 	{
 		delete Blok;
 		Blok = NULL;
 	}
 
-	LedData = new UINT8[LedAantal*3];
+	LedData = new UINT8[LedAantal * 3];
 	Blok = new Grid[LedAantal];
-		
+
 
 	//Zet alles op 0
-	ZeroMemory(LedData, LedAantal*3);
+	ZeroMemory(LedData, LedAantal * 3);
 
 	//GridSize berekeningen
 	int i, j;
@@ -91,7 +91,7 @@ void ScreenCalc::Bereken()
 {
 	for (int i = 0; i < LedAantal; i++)
 	{
-		Gemiddelde(LedData+(i*3), Blok[i].TLX, Blok[i].TLY, Blok[i].BRY, Blok[i].BRX);
+		Gemiddelde(LedData + (i * 3), Blok[i].TLX, Blok[i].TLY, Blok[i].BRY, Blok[i].BRX);
 	}
 
 }
@@ -108,25 +108,32 @@ void ScreenCalc::Gemiddelde(UINT8 *Led, int TopLeftX, int TopLeftY, int BottomRi
 		for (y = TopLeftY; y < BottomRightY; y++)
 		{
 			//Als het bijna puur zwart is sla je hem over bij gemiddelde berekening
-			if (((PixelData[x + y*Hres] >> 0) & 0xFF) < 0x04 && ((PixelData[x + y*Hres] >> 8) & 0xFF) < 0x04 && ((PixelData[x + y*Hres] >> 0) & 0xFF) < 0x04)
+			//std::cout << (unsigned int)(((PixelData[x + y*Hres] >> 0) & 0xFF)) << '/' << j << std::endl;
+			if ((((PixelData[x + y*Hres] >> 0) & 0xFF) < 0x04) && (((PixelData[x + y*Hres] >> 8) & 0xFF) < 0x04) && (((PixelData[x + y*Hres] >> 16) & 0xFF) < 0x04))
 			{
 				skipped++;
 			}
 			else
 			{
+				//std::cout << (PixelData[x + y*Hres]&0x000000FF) << ',' << ((PixelData[x + y*Hres] >> 0) & 0xFF) << std::endl;
+				//Sleep(100);
 				r += ((PixelData[x + y*Hres] >> 0) & 0xFF);
 				g += ((PixelData[x + y*Hres] >> 8) & 0xFF);
 				b += ((PixelData[x + y*Hres] >> 16) & 0xFF);
+				
 			}
 			j++;
 		}
 	}
-	int temp = ((j) - skipped);
+	int temp = ((j)-skipped);
 	if (temp == 0)
 		temp = 1;
+	//std::cout << r << '/' << temp << std::endl;
+
 	Led[0] = r / temp;
 	Led[1] = g / temp;
 	Led[2] = b / temp;
+	
 }
 
 UINT16 ScreenCalc::geefLeds()

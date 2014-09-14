@@ -23,6 +23,7 @@ public:
 	void capture();
 	int return_hres();
 	int return_vres();
+	int return_adapterCounnt();
 
 public:
 	IDirect3D9* Direct3D = NULL;

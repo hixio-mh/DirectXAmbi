@@ -81,3 +81,8 @@ int Direct3DCap::return_hres()
 {
 	return ddm.Width;
 }
+
+int Direct3DCap::return_adapterCounnt()
+{
+	return (int)AdapterCount;
+}
