@@ -16,7 +16,16 @@ int main()
 	bool exit = false;						//dit is voor later een escape variable
 
 	Direct3DCap Cap;						//init directx
-	Cap.init(1);							//
+	int i = 1;
+	std::cout << "Kies een van de bovenstaande schermen" << std::endl;
+	scanf("%d", &i);
+	while (i >= Cap.return_adapterCounnt() || i < 0)
+	{
+		std::cout <<"Keuze: "<<i<< " is ongeldig \nKies een van de bovenstaande schermen" << std::endl;
+		scanf("%d", &i);
+	}
+	
+	Cap.init(i);							//
 
 	ScreenCalc Scherm(105,					//init de kleur bereken functies
 						Cap.pBits,			//De PixelData
@@ -88,8 +97,6 @@ int main()
 		Cap.capture();					//Maak screenshot en sla die op
 
 		Scherm.Bereken();				//Bereken alle led kleuren
-	
-		
 
 		while (Rx_buffer[0] != '1')		//Wacht tot arduino weer klaar is
 		{
@@ -97,9 +104,8 @@ int main()
 		}
 		Rx_buffer[0] = '0';
 
-		clock_t end = clock();
+		clock_t end = clock(); 
 		std::cout << "FPS: " << CLOCKS_PER_SEC / double(end - begin) << std::endl;	//Print de FPS uit
 	}
-	pointer = NULL;	//Zorg dat Pointer nergens meer naar wijst
 	return 0;
 }
