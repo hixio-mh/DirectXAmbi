@@ -1,0 +1,20 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Atmel Studio Solution File, Format Version 11.00
+Project("{54F91283-7BC4-4236-8FF9-10F437C3AD48}") = "Ambilight_final", "Ambilight_final\Ambilight_final.cproj", "{0A681F2E-2309-4894-84F3-4F29C0B8284B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|AVR = Debug|AVR
+		Release|AVR = Release|AVR
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{0A681F2E-2309-4894-84F3-4F29C0B8284B}.Debug|AVR.ActiveCfg = Debug|AVR
+		{0A681F2E-2309-4894-84F3-4F29C0B8284B}.Debug|AVR.Build.0 = Debug|AVR
+		{0A681F2E-2309-4894-84F3-4F29C0B8284B}.Release|AVR.ActiveCfg = Release|AVR
+		{0A681F2E-2309-4894-84F3-4F29C0B8284B}.Release|AVR.Build.0 = Release|AVR
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

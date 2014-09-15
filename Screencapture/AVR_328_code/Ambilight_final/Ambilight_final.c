@@ -30,11 +30,11 @@ int main(void)
 	ws2812_sendarray(LedArray,1800);
 	
 	
-	UCSR0A = (1<<U2X0);
+	//UCSR0A = (1<<U2X0);
 	UCSR0B = ((1 << RXEN0) | (1 << TXEN0) | (1<<RXCIE0));   // Zet de Serial communicatie aan. RXCIE0 is voor interrupt | (1<<RXCIE0)
 	UCSR0C = ((1<<UCSZ01)|(3<<UCSZ00)); // Gebruik 8-bit character sizes - 1 bits stop
 	UBRR0H = 0; // Laad de eerste 8 bits naar het UBBRH register
-	UBRR0L = 0x03; // Laad de laatste 8 bits naar het UBBRL register
+	UBRR0L = 0x00; // Laad de laatste 8 bits naar het UBBRL register
 	
 	_delay_ms(2000);		//geed de computer tijd om alles te initen
 	uint8_t firstbyte = 0;
@@ -113,10 +113,11 @@ ISR(USART_RX_vect)
 	
 	if (data_count >= ((Led_count*3)-1))
 	{
+		ws2812_sendarray(LedArray,Led_count*3);	
 		data_count = 0;
 		UDR0 = 0x31;
 		
-		ws2812_sendarray(LedArray,Led_count*3);		
+			
 	}
 	else
 	{
