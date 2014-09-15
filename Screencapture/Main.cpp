@@ -79,7 +79,7 @@ int main()
 
 	SP->WriteData((char*)Tx_buffer, 2);
 
-	Sleep(100);	//Wacht 100 miliseconden op antwoord
+	Sleep(1000);	//Wacht 1 seconde op de arduino
 
 	std::cout << "Press ESC to quit capturing" << std::endl;
 
@@ -100,13 +100,13 @@ int main()
 		SP->WriteData((char*)pointer, Scherm.geefLeds() * 3);	//Stuur alle data weg
 
 
-
+		SP->ReadData(Rx_buffer, 10);
 		while (Rx_buffer[0] != '1')		//Wacht tot arduino weer klaar is
 		{
 			SP->ReadData(Rx_buffer, 100);
 		}
 		Rx_buffer[0] = '0';
-
+		//Sleep(33);
 		//clock_t end = clock(); 
 		//std::cout << "FPS: " << double(end - begin)/CLOCKS_PER_SEC << std::endl;	//Print de FPS uit
 	}

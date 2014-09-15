@@ -21,9 +21,11 @@ Direct3DCap::Direct3DCap() :scherm_nummer(0)
 
 Direct3DCap::~Direct3DCap()
 {
-	delete pBits;
-	pBits = NULL;
+	Surface->UnlockRect();
 	Surface->Release();
+//	delete pBits;
+	pBits = NULL;
+	
 }
 
 void Direct3DCap::init(UINT8 schermnummer)
@@ -62,7 +64,8 @@ void Direct3DCap::init(UINT8 schermnummer)
 void Direct3DCap::capture()
 {
 	Direct3dDevice->GetFrontBufferData(0, Surface);
-	Surface->LockRect(&lockedRect, NULL, D3DLOCK_NO_DIRTY_UPDATE | D3DLOCK_NOSYSLOCK | D3DLOCK_READONLY);
+	//Direct3dDevice->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &Surface);
+	Surface->LockRect(&lockedRect, NULL, D3DLOCK_NO_DIRTY_UPDATE | D3DLOCK_NOSYSLOCK | D3DLOCK_READONLY | D3DLOCK_DONOTWAIT);
 	for (int i = 0; i < ddm.Height; i++)
 	{
 		memcpy((BYTE*)pBits + i * ddm.Width * BITSPERPIXEL / 8,
