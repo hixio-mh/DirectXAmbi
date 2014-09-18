@@ -7,6 +7,8 @@ It uses the WS2812 library from: https://github.com/cpldcpu/light_ws2812
 Because i've never done assembly before ;)
 Later on I'm thinking of writing my own replacement for it that maybe is even more efficient.
 
+You can use an Arduino uno for this software. Connect the WS2812B data line to pin 8 on the arduino.
+
 
 You need to install the DirectX SDK to compile it. 
 http://www.microsoft.com/en-us/download/details.aspx?id=6812
