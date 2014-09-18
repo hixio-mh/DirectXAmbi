@@ -150,7 +150,9 @@ int main()
 		}
 		Rx_buffer[0] = '0';
 	}
-
+	SP->~Serial();
+	Cap.~Direct3DCap();
+	Scherm.~ScreenCalc();
 	
 	return 0;
 }

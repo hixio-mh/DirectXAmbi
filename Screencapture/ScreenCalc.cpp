@@ -4,7 +4,7 @@
 ScreenCalc::ScreenCalc(float Diago, UINT32 *DataSet, int hres, int vres, int BlockH, 
 						int BlockV, int boven, int onder, int links, int rechts, int Black) 
 :Hres(hres), Vres(vres), LedData(NULL), BlockDepthHori(BlockH), BlockDepthVert(BlockV), Blok(NULL), 
-LedsBoven(boven), LedsOnder(onder), LedsLinks(links), LedsRechts(rechts), BlackLevel(Black)
+LedsBoven(boven), LedsOnder(onder), LedsLinks(links), LedsRechts(rechts), BlackLevel(Black), GammaE(NULL)
 {
 	double verhouding;
 	verhouding = (double)Hres / (double)Vres;
@@ -37,7 +37,9 @@ ScreenCalc::~ScreenCalc()
 	//Ruim alles netjes op
 	delete PixelData;
 	delete LedData;
+	delete GammaE;
 
+	GammaE = NULL;
 	PixelData = NULL;
 	LedData = NULL;
 	Blok = NULL;
@@ -151,7 +153,7 @@ void ScreenCalc::Gemiddelde(UINT8 *Led, int TopLeftX, int TopLeftY, int BottomRi
 
 	Led[0] = GammaE[(g / j)];
 	Led[1] = GammaE[(r / j)];
-	Led[2] = GammaE[(b / j)];
+	Led[2] = GammaE[(b / j)]*0.75;
 	
 }
 
