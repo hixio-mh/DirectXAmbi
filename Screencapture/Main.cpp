@@ -9,6 +9,7 @@
 #include "SerialClass.h"
 
 void CreateConfig(std::ofstream &file, Direct3DCap &cap);
+int *LedAmountTest();
 
 
 int main()
@@ -72,10 +73,10 @@ int main()
 						Config[1],					//Hoeveel procent die moet nemen aan de bovenkant/onderkant
 						Config[2],					//Hoeveel procent die aan de zijkant moet nemen
 						Config[3],				//Leds Boven
-						Config[4],					//Leds Onder
-						Config[5],					//Leds Links
-						Config[6],
-						Config[7]);					//Leds Rechts
+						Config[5],					//Leds Onder
+						Config[4],					//Leds Links
+						Config[6],				//Leds Rechts
+						Config[7]);					
 	
 	Scherm.Bereken_Grid();					//stel de hoeveelheid leds in die worden gebruikt en bereken Grid Grootte
 	
@@ -188,45 +189,12 @@ void CreateConfig(std::ofstream &file, Direct3DCap &cap)
 	}
 	file << i << std::endl;
 
-	i = 0;
-	std::cout << "Hoeveel Leds zitter er boven" << std::endl;
-	scanf("%d", &i);
-	while (i < 1)
-	{
-		std::cout << "Keuze: " << i << " is ongeldig \n" << std::endl;
-		scanf("%d", &i);
-	}
-	file << i << std::endl;
+	int *pointer = LedAmountTest();
 
-	i = 0;
-	std::cout << "Hoeveel Leds zitter er onder" << std::endl;
-	scanf("%d", &i);
-	while (i < 1)
-	{
-		std::cout << "Keuze: " << i << " is ongeldig \n" << std::endl;
-		scanf("%d", &i);
-	}
-	file << i << std::endl;
-
-	i = 0;
-	std::cout << "Hoeveel Leds zitter er links" << std::endl;
-	scanf("%d", &i);
-	while (i < 1)
-	{
-		std::cout << "Keuze: " << i << " is ongeldig \n" << std::endl;
-		scanf("%d", &i);
-	}
-	file << i << std::endl;
-
-	i = 0;
-	std::cout << "Hoeveel Leds zitter er rechts" << std::endl;
-	scanf("%d", &i);
-	while (i < 1)
-	{
-		std::cout << "Keuze: " << i << " is ongeldig \n" << std::endl;
-		scanf("%d", &i);
-	}
-	file << i << std::endl;
+	file << pointer[0] << std::endl;
+	file << pointer[1] << std::endl;
+	file << pointer[2] << std::endl;	
+	file << pointer[3] << std::endl;
 	
 	i = 0;
 	std::cout << "Wat is de minimum zwartwaarde (0- 60)" << std::endl;
@@ -237,4 +205,97 @@ void CreateConfig(std::ofstream &file, Direct3DCap &cap)
 		scanf("%d", &i);
 	}
 	file << i << std::endl;
+}
+
+int *LedAmountTest()
+{
+	Serial* SP = new Serial("\\\\.\\COM5");
+
+	if (SP->IsConnected())
+		std::cout << "Connected with COM5" << std::endl;
+
+	bool exit = false;
+	//je kan hier op escape drukken om het programma af ste sluiten hier
+	std::cout << "Waiting for Arduino. Press ESC to quit" << std::endl;
+	char Rx_buffer[2] = "";
+
+	while (Rx_buffer[0] != '0') //blijf hier hangen tot de arduino klaar is
+	{
+		Sleep(100);
+		SP->ReadData(Rx_buffer, 2);
+		if (GetAsyncKeyState(VK_ESCAPE))
+		{
+			exit = true;
+		}
+		if (exit == true)
+		{
+			std::cout << "Something went wrong with communication. Check baudrate settings and COM port" << std::endl;
+		}
+	}
+
+	Rx_buffer[0] = '0';
+
+	std::cout << "Got response from arduino sending amount of leds" << std::endl;
+
+	//Stuur de hoeveelheid leds naar de arduino
+	UINT8 Tx_buffer[600 * 3];
+
+	ZeroMemory(Tx_buffer, 600 * 3);
+	Tx_buffer[0] = 600 >> 8 & 0x00FF;
+	Tx_buffer[1] = 600 & 0x00FF;
+
+	SP->WriteData((char*)Tx_buffer, 2);
+
+
+	std::cout << "Press up to add a LED and press down to remove one." << std::endl;
+	std::cout << "When you are satisfied press SPACEBAR to confirm" << std::endl;
+	std::cout << "Press ESC to quit" << std::endl;
+
+	//onderstaande stukje code zal blijven draaien tot je op ESC drukt
+	static int leds[4] = { 0 },i=0;
+	int offset = 0;
+	leds[0]++;
+	while (i <4)
+	{
+		if (GetAsyncKeyState(VK_SPACE))						//Als escape is ingedrukt zet exit true
+		{
+			offset += leds[i];
+			i++;
+			Sleep(500);
+		}
+		if (GetAsyncKeyState(VK_UP))
+		{
+			leds[i]++;
+			ZeroMemory(Tx_buffer, 600 * 3);
+			for (int j = 0; j < leds[i]; j++)
+			{
+				for (int k = 0; k < 3; k++)
+				{
+					Tx_buffer[(j+offset)*3 + k] = 0xff;
+				}
+				
+			}
+
+			SP->WriteData((char*)Tx_buffer, 1800);
+			Sleep(50);
+		}
+		if (GetAsyncKeyState(VK_DOWN) && leds[i] > 1)
+		{
+			leds[i]--;
+			ZeroMemory(Tx_buffer, 600 * 3);
+			for (int j = 0; j < leds[i]; j++)
+			{
+				for (int k = 0; k < 3; k++)
+				{
+					Tx_buffer[(j + offset) * 3 + k] = 0xff;
+				}
+
+			}
+			SP->WriteData((char*)Tx_buffer, 1800);
+			Sleep(50);
+		}
+
+	}
+	SP->~Serial();
+	return leds;
 }
