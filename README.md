@@ -14,8 +14,8 @@ http://www.microsoft.com/en-us/download/details.aspx?id=6812
 It works right now. There no known errors or bugs.
 If you find any please report them
 
-It has NO UI yet. There is a screen selection at the start of the program.
-All settings must be done currently in code.
+It first startup it will start a wizard to help you configure the software.
+It is all terminal based currently, because I hate it to create UI's.
 Comments are all in dutch.
 
 For any question please contact me at jobvdv@gmail.com.
