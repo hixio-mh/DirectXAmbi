@@ -83,12 +83,6 @@ int main(void)
 			//Doe niks hier
 			//Wacht op led data 
 			//alles word afgehandeld in interrupt
-			//Stuur hier alleen maar dat je niks aan het doen bent	
-			_delay_ms(10);
-			if(( UCSR0A & (1<<UDRE0)))
-			{
-				UDR0 = 0x31;
-			}
 					
 		}
 	}
