@@ -13,7 +13,8 @@ typedef struct Grid {
 class ScreenCalc
 {
 public:
-	ScreenCalc(float Diago, UINT32 *DataSet, int Hres, int Vres, int BlockH, int BlockV, int ledspm);
+	ScreenCalc(float Diago, UINT32 *DataSet, int Hres, int Vres, int BlockH, int BlockV,
+				int boven, int onder, int links, int rechts, int Black);
 	~ScreenCalc();
 	void Bereken_Grid();
 	UINT16 geefLeds();
@@ -29,7 +30,12 @@ private:
 	int Hres, Vres;
 	int BlockDepthHori;	//in procent
 	int BlockDepthVert; //in procent
-	int LedsPm;
+	int LedsBoven;
+	int LedsOnder;
+	int LedsLinks;
+	int LedsRechts;
+	int BlackLevel;
+
 	UINT16 LedAantal;
 
 	UINT32 *PixelData;

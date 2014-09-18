@@ -1,14 +1,17 @@
 #include "ScreenCalc.h"
 #include <iostream>
 
-ScreenCalc::ScreenCalc(float Diago, UINT32 *DataSet, int hres, int vres, int BlockH, int BlockV, int ledspm) :Hres(hres), Vres(vres), LedData(NULL), BlockDepthHori(BlockH), BlockDepthVert(BlockV), Blok(NULL), LedsPm(ledspm)
+ScreenCalc::ScreenCalc(float Diago, UINT32 *DataSet, int hres, int vres, int BlockH, 
+						int BlockV, int boven, int onder, int links, int rechts, int Black) 
+:Hres(hres), Vres(vres), LedData(NULL), BlockDepthHori(BlockH), BlockDepthVert(BlockV), Blok(NULL), 
+LedsBoven(boven), LedsOnder(onder), LedsLinks(links), LedsRechts(rechts), BlackLevel(Black)
 {
 	double verhouding;
 	verhouding = (double)Hres / (double)Vres;
 	Hoogte = sin(atan((double)1 / verhouding)) * Diago*2.54;
 	Lengte = Hoogte * verhouding;
 	PixelData = DataSet;
-	LedAantal = ((int)Hoogte*LedsPm / 100) * 2 + ((int)Lengte*LedsPm / 100) * 2;
+	LedAantal = LedsBoven + LedsLinks + LedsRechts + LedsOnder;
 }
 
 ScreenCalc::~ScreenCalc()
@@ -49,40 +52,40 @@ void ScreenCalc::Bereken_Grid()
 	int i, j;
 	int led = 0;
 	//bovenste rij
-	for (i = 0; i < (LedsPm*(int)Lengte / 100); i++)
+	for (i = 0; i < LedsBoven; i++)
 	{
-		Blok[led].TLX = (Hres*i) / (LedsPm*(int)Lengte / 100);	//
+		Blok[led].TLX = (Hres*i) / LedsBoven;	//
 		Blok[led].TLY = 0;
-		Blok[led].BRX = (int)(Hres*(i + 1)) / (LedsPm*(int)Lengte / 100);
+		Blok[led].BRX = (int)(Hres*(i + 1)) / LedsBoven;
 		Blok[led].BRY = (Vres*BlockDepthVert) / 100;
 		led++;
 	}
 
 	//rechter rij
-	for (j = 0; j < (LedsPm*(int)Hoogte / 100); j++)
+	for (j = 0; j < LedsRechts; j++)
 	{
 		Blok[led].TLX = Hres - ((Hres * BlockDepthHori) / 100);
-		Blok[led].TLY = (Vres*j) / (LedsPm*Hoogte / 100);
+		Blok[led].TLY = (Vres*j) / LedsRechts;
 		Blok[led].BRX = Hres;
-		Blok[led].BRY = (Vres*(j + 1)) / (LedsPm*Hoogte / 100);
+		Blok[led].BRY = (Vres*(j + 1)) / LedsRechts;
 		led++;
 	}
-	//onderste rij van links naar rechts
-	for (i = 0; i < (LedsPm*(int)Lengte / 100); i++)
+	//onderste rij van rechts naar links
+	for (i = 0; i < LedsOnder; i++)
 	{
-		Blok[led].TLX = Hres - (Hres*(i + 1)) / (LedsPm*(int)Lengte / 100);	//
+		Blok[led].TLX = Hres - (Hres*(i + 1)) / LedsOnder;	//
 		Blok[led].TLY = Vres - ((Vres*BlockDepthVert) / 100);
-		Blok[led].BRX = Hres - (Hres*i) / (LedsPm*(int)Lengte / 100);
+		Blok[led].BRX = Hres - (Hres*i) / LedsOnder;
 		Blok[led].BRY = Vres;
 		led++;
 	}
 	//linker rij onder naar boven
-	for (j = 0; j < (LedsPm*(int)Hoogte / 100); j++)
+	for (j = 0; j < LedsLinks; j++)
 	{
 		Blok[led].TLX = 0;
-		Blok[led].TLY = Vres - (Vres*(j + 1)) / (LedsPm*(int)Hoogte / 100);
+		Blok[led].TLY = Vres - (Vres*(j + 1)) / LedsLinks;
 		Blok[led].BRX = (Hres*BlockDepthVert) / 100;
-		Blok[led].BRY = Vres - (Vres*j) / (LedsPm*(int)Hoogte / 100);
+		Blok[led].BRY = Vres - (Vres*j) / LedsLinks;
 		led++;
 	}
 }
@@ -108,7 +111,7 @@ void ScreenCalc::Gemiddelde(UINT8 *Led, int TopLeftX, int TopLeftY, int BottomRi
 		{
 			//Als het bijna puur zwart is sla je hem over bij gemiddelde berekening
 			//std::cout << (unsigned int)(((PixelData[x + y*Hres] >> 0) & 0xFF)) << '/' << j << std::endl;
-			if ((((PixelData[x + y*Hres] >> 0) & 0xFF) < 0x20) && (((PixelData[x + y*Hres] >> 8) & 0xFF) < 0x20) && (((PixelData[x + y*Hres] >> 16) & 0xFF) < 0x20))
+			if ((((PixelData[x + y*Hres] >> 0) & 0xFF) < BlackLevel) && (((PixelData[x + y*Hres] >> 8) & 0xFF) < BlackLevel) && (((PixelData[x + y*Hres] >> 16) & 0xFF) < BlackLevel))
 			{
 			}
 			else
