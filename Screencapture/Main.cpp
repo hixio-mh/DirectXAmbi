@@ -21,7 +21,7 @@ int main()
 	myinfile.open("Config.txt");
 
 	
-
+	//Als het bestand is geopend bestaat die al dus sla je het maken over
 	if (!myinfile.is_open())
 	{
 		myinfile.close();
@@ -46,7 +46,20 @@ int main()
 		std::getline(myinfile, STRING);
 		Config[i] = atoi(STRING.c_str());
 	}
-	
+	myinfile.close();
+
+	//Check of config laden goed is gelukt
+	int i = 0;
+	while (Config[i] != 0 && i < 8)
+	{
+		i++;
+	}
+	if (i < 8)
+	{
+		std::cout << "Config Loading went wrong! Please delete Config.txt and run this software again!" << std::endl;
+		return 0;
+	}
+
 	
 
 	
@@ -137,7 +150,7 @@ int main()
 		Rx_buffer[0] = '0';
 	}
 
-	myinfile.close();
+	
 	return 0;
 }
 
