@@ -42,5 +42,8 @@ private:
 	UINT8 *LedData;	//multidimensio pointer
 
 	Grid *Blok;
+
+	//Gamma correction lookup table
+	int *GammaE;
 };
 
