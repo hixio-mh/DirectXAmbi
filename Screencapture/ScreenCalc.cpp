@@ -12,7 +12,7 @@ LedsBoven(boven), LedsOnder(onder), LedsLinks(links), LedsRechts(rechts), BlackL
 	Lengte = Hoogte * verhouding;
 	PixelData = DataSet;
 	LedAantal = LedsBoven + LedsLinks + LedsRechts + LedsOnder;
-	GammaE = new int[]
+	GammaE = new int[256]
 	{
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1,
@@ -35,14 +35,13 @@ LedsBoven(boven), LedsOnder(onder), LedsLinks(links), LedsRechts(rechts), BlackL
 ScreenCalc::~ScreenCalc()
 {
 	//Ruim alles netjes op
-	delete PixelData;
-	delete LedData;
-	delete GammaE;
+	delete[] LedData;
+	delete[] GammaE;
 
-	GammaE = NULL;
-	PixelData = NULL;
-	LedData = NULL;
-	Blok = NULL;
+	GammaE = nullptr;
+	PixelData = nullptr;
+	LedData = nullptr;
+	Blok = nullptr;
 }
 
 void ScreenCalc::Bereken_Grid()
@@ -51,17 +50,17 @@ void ScreenCalc::Bereken_Grid()
 
 	if (LedData != NULL)
 	{
-		delete LedData;
-		LedData = NULL;
+		delete[] LedData;
+		LedData = nullptr;
 	}
 
 	if (Blok != NULL)
 	{
-		delete Blok;
-		Blok = NULL;
+		delete[] Blok;
+		Blok = nullptr;
 	}
 
-	LedData = new UINT8[LedAantal * 3];
+	LedData = new UINT8[(LedAantal * 3)];
 	Blok = new Grid[LedAantal];
 
 
@@ -153,7 +152,7 @@ void ScreenCalc::Gemiddelde(UINT8 *Led, int TopLeftX, int TopLeftY, int BottomRi
 
 	Led[0] = GammaE[(g / j)];
 	Led[1] = GammaE[(r / j)];
-	Led[2] = GammaE[(b / j)]*0.75;
+	Led[2] = GammaE[(b / j)];
 	
 }
 

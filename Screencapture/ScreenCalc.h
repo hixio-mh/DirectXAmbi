@@ -17,8 +17,10 @@ public:
 				int boven, int onder, int links, int rechts, int Black);
 	~ScreenCalc();
 	void Bereken_Grid();
-	UINT16 geefLeds();
+	
 	void Bereken();
+
+	UINT16 geefLeds();
 	UINT8 *GeefLedPointer();
 
 private:

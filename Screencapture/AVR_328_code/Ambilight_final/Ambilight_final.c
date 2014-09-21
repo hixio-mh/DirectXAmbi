@@ -42,7 +42,7 @@ int main(void)
 	while((Led_count & 0x00FF) < 1)
 	{
 		_delay_ms(100);
-		if(UCSR0A & (1<<UDRE0) && firstbyte == 0);	//als de data buffer vrij is stuur 0xff
+		if(UCSR0A & (1<<UDRE0) && firstbyte == 0);	//als de data buffer vrij is stuur 0x30
 		{
 			UDR0 = 0x30;
 		}

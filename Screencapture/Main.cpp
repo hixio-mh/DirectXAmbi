@@ -8,6 +8,7 @@
 #include "ScreenCalc.h"
 #include "SerialClass.h"
 
+
 void CreateConfig(std::ofstream &file, Direct3DCap &cap);
 int *LedAmountTest();
 
@@ -93,7 +94,7 @@ int main()
 	//je kan hier op escape drukken om het programma af ste sluiten hier
 	std::cout << "Waiting for Arduino. Press ESC to quit" << std::endl;
 
-
+	SP->ReadData(Rx_buffer, 2);
 	while(Rx_buffer[0] != '0') //blijf hier hangen tot de arduino klaar is
 	{
 		Sleep(100);
@@ -130,8 +131,6 @@ int main()
 	pointer = Scherm.GeefLedPointer();	//Koppel de led bitstream aan de pointer
 	while (exit == false)
 	{
-		clock_t begin = clock();
-
 		if (GetAsyncKeyState(VK_ESCAPE))						//Als escape is ingedrukt zet exit true
 		{
 			exit = true;
@@ -150,9 +149,10 @@ int main()
 		}
 		Rx_buffer[0] = '0';
 	}
-	SP->~Serial();
-	Cap.~Direct3DCap();
-	Scherm.~ScreenCalc();
+//	pointer = nullptr;
+//	SP->~Serial();
+//	Cap.~Direct3DCap();
+//	Scherm.~ScreenCalc();
 	
 	return 0;
 }

@@ -23,8 +23,8 @@ Direct3DCap::~Direct3DCap()
 {
 	Surface->UnlockRect();
 	Surface->Release();
-//	delete pBits;
-	pBits = NULL;
+	delete[] pBits;
+	pBits = nullptr;
 	
 }
 
