@@ -4,7 +4,8 @@
 ScreenCalc::ScreenCalc(float Diago, UINT32 *DataSet, int hres, int vres, int BlockH, 
 						int BlockV, int boven, int onder, int links, int rechts, int Black) 
 :Hres(hres), Vres(vres), LedData(NULL), BlockDepthHori(BlockH), BlockDepthVert(BlockV), Blok(NULL), 
-LedsBoven(boven), LedsOnder(onder), LedsLinks(links), LedsRechts(rechts), BlackLevel(Black), GammaE(NULL)
+LedsBoven(boven), LedsOnder(onder), LedsLinks(links), LedsRechts(rechts), BlackLevel(Black), GammaE(NULL),
+Fade(NULL)
 {
 	double verhouding;
 	verhouding = (double)Hres / (double)Vres;
@@ -12,7 +13,8 @@ LedsBoven(boven), LedsOnder(onder), LedsLinks(links), LedsRechts(rechts), BlackL
 	Lengte = Hoogte * verhouding;
 	PixelData = DataSet;
 	LedAantal = LedsBoven + LedsLinks + LedsRechts + LedsOnder;
-	GammaE = new int[256]
+	GammaE = new int[256] {0};
+	/*GammaE = new int[256]
 	{
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 			0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1,
@@ -30,6 +32,7 @@ LedsBoven(boven), LedsOnder(onder), LedsLinks(links), LedsRechts(rechts), BlackL
 			144, 146, 148, 150, 152, 154, 156, 158, 160, 162, 164, 167, 169, 171, 173, 175,
 			177, 180, 182, 184, 186, 189, 191, 193, 196, 198, 200, 203, 205, 208, 210, 213,
 			215, 218, 220, 223, 225, 228, 231, 233, 236, 239, 241, 244, 247, 249, 252, 255 };
+			*/
 }
 
 ScreenCalc::~ScreenCalc()
@@ -164,4 +167,20 @@ UINT16 ScreenCalc::geefLeds()
 UINT8 *ScreenCalc::GeefLedPointer()
 {
 	return LedData;
+}
+
+void ScreenCalc::set_Gamma(float Gamma)
+{
+	for (int i = 0; i < 256; i++)
+	{
+		GammaE[i] = ((float)pow((float)((float)i / 255), (float)((float)1 / Gamma))) * (float)255;
+		if (GammaE[i] > 255)
+		{
+			GammaE[i] = 255;
+		}
+		else if (GammaE[i] < 0)
+		{
+			GammaE[i] = 0;
+		}
+	}
 }

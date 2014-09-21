@@ -18,6 +18,7 @@ public:
 	~ScreenCalc();
 	void Bereken_Grid();
 	
+	void set_Gamma(float Gamma);
 	void Bereken();
 
 	UINT16 geefLeds();
@@ -44,6 +45,7 @@ private:
 	UINT8 *LedData;	//multidimensio pointer
 
 	Grid *Blok;
+	Grid *Fade;
 
 	//Gamma correction lookup table
 	int *GammaE;

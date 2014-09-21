@@ -39,7 +39,7 @@ int main()
 	}
 
 	std::string STRING;
-	int Config[8];
+	int Config[8] = { -1 };
 
 	for (int i = 0; i < 8; i++)
 	{
@@ -52,7 +52,7 @@ int main()
 
 	//Check of config laden goed is gelukt
 	int i = 0;
-	while (Config[i] != 0 && i < 8)
+	while (Config[i] != -1 && i < 8)
 	{
 		i++;
 	}
@@ -81,6 +81,8 @@ int main()
 	
 	Scherm.Bereken_Grid();					//stel de hoeveelheid leds in die worden gebruikt en bereken Grid Grootte
 	
+	Scherm.set_Gamma(0.35);
+
 	//Het programma moet eerst 0xff binnen krijgen als dat het geval is dan mag die beginnen met het oversturen
 	//van de hoeveelheid leds
 	//Als die hoeveelheden overeenkomen mag die beginnen met het zenden van led data
@@ -149,10 +151,6 @@ int main()
 		}
 		Rx_buffer[0] = '0';
 	}
-//	pointer = nullptr;
-//	SP->~Serial();
-//	Cap.~Direct3DCap();
-//	Scherm.~ScreenCalc();
 	
 	return 0;
 }
