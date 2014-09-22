@@ -147,6 +147,7 @@ int main()
 		{
 			exit = true;
 		}
+		Scherm.Calc_Aspect_ratio();
 		Cap.capture();					//Maak screenshot en sla die op
 
 		Scherm.Bereken();				//Bereken alle led kleuren

@@ -23,6 +23,8 @@ public:
 
 	void SetOffset(int *Offset);
 
+	float Calc_Aspect_ratio();
+
 	UINT16 geefLeds();
 	UINT8 *GeefLedPointer();
 
