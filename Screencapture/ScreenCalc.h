@@ -4,10 +4,10 @@
 #include <math.h>
 
 typedef struct Grid {
-	int TLX;
-	int TLY;
-	int BRX;
-	int BRY;
+	int TLX = 0;
+	int TLY = 0;
+	int BRX = 0;
+	int BRY = 0;
 };
 
 class ScreenCalc
@@ -20,6 +20,8 @@ public:
 	
 	void set_Gamma(float Gamma);
 	void Bereken();
+
+	void SetOffset(int *Offset);
 
 	UINT16 geefLeds();
 	UINT8 *GeefLedPointer();
@@ -45,7 +47,8 @@ private:
 	UINT8 *LedData;	//multidimensio pointer
 
 	Grid *Blok;
-	Grid *Fade;
+	
+	int *Offset;
 
 	//Gamma correction lookup table
 	int *GammaE;

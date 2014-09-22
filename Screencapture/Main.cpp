@@ -20,7 +20,7 @@ int main()
 	Direct3DCap Cap;						//init directx
 
 	std::ifstream myinfile;
-	myinfile.open("Config.txt");
+	myinfile.open("./Config.txt");
 
 	
 	//Als het bestand is geopend bestaat die al dus sla je het maken over
@@ -29,13 +29,13 @@ int main()
 		myinfile.close();
 		std::ofstream myfile;
 
-		myfile.open("Config.txt");
+		myfile.open("./Config.txt");
 
 		CreateConfig(myfile, Cap);
 
 		myfile.close();
 
-		myinfile.open("Config.txt");
+		myinfile.open("./Config.txt");
 	}
 
 	std::string STRING;
@@ -78,11 +78,21 @@ int main()
 						Config[4],					//Leds Links
 						Config[6],				//Leds Rechts
 						Config[7]);					
-	
+	int temp[8];
+	temp[0] = 1;
+	temp[1] = 5;
+	temp[2] = 3;
+	temp[3] = 1;
+	temp[4] = 4;
+	temp[5] = 2;
+	temp[6] = 1;
+	temp[7] = 2;
+	//Scherm.SetOffset(temp);
+
 	Scherm.Bereken_Grid();					//stel de hoeveelheid leds in die worden gebruikt en bereken Grid Grootte
 	
 	Scherm.set_Gamma(0.35);
-
+	
 	//Het programma moet eerst 0xff binnen krijgen als dat het geval is dan mag die beginnen met het oversturen
 	//van de hoeveelheid leds
 	//Als die hoeveelheden overeenkomen mag die beginnen met het zenden van led data
@@ -140,6 +150,7 @@ int main()
 		Cap.capture();					//Maak screenshot en sla die op
 
 		Scherm.Bereken();				//Bereken alle led kleuren
+		//Scherm.Bereken((int)10);
 
 		SP->WriteData((char*)pointer, Scherm.geefLeds() * 3);	//Stuur alle data weg
 

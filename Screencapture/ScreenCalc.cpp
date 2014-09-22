@@ -4,8 +4,7 @@
 ScreenCalc::ScreenCalc(float Diago, UINT32 *DataSet, int hres, int vres, int BlockH, 
 						int BlockV, int boven, int onder, int links, int rechts, int Black) 
 :Hres(hres), Vres(vres), LedData(NULL), BlockDepthHori(BlockH), BlockDepthVert(BlockV), Blok(NULL), 
-LedsBoven(boven), LedsOnder(onder), LedsLinks(links), LedsRechts(rechts), BlackLevel(Black), GammaE(NULL),
-Fade(NULL)
+LedsBoven(boven), LedsOnder(onder), LedsLinks(links), LedsRechts(rechts), BlackLevel(Black), GammaE(NULL)
 {
 	double verhouding;
 	verhouding = (double)Hres / (double)Vres;
@@ -14,6 +13,7 @@ Fade(NULL)
 	PixelData = DataSet;
 	LedAantal = LedsBoven + LedsLinks + LedsRechts + LedsOnder;
 	GammaE = new int[256] {0};
+	Offset = new int[8] {0};
 	/*GammaE = new int[256]
 	{
 		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -40,6 +40,7 @@ ScreenCalc::~ScreenCalc()
 	//Ruim alles netjes op
 	delete[] LedData;
 	delete[] GammaE;
+	delete[] Blok;
 
 	GammaE = nullptr;
 	PixelData = nullptr;
@@ -66,15 +67,14 @@ void ScreenCalc::Bereken_Grid()
 	LedData = new UINT8[(LedAantal * 3)];
 	Blok = new Grid[LedAantal];
 
-
 	//Zet alles op 0
 	ZeroMemory(LedData, LedAantal * 3);
 
 	//GridSize berekeningen
 	int i, j;
-	int led = 0;
+	int led = Offset[0];
 	//bovenste rij
-	for (i = 0; i < LedsBoven; i++)
+	for (i = Offset[0]; i < LedsBoven - Offset[1]; i++)
 	{
 		Blok[led].TLX = (Hres*i) / LedsBoven;	//
 		Blok[led].TLY = 0;
@@ -82,9 +82,10 @@ void ScreenCalc::Bereken_Grid()
 		Blok[led].BRY = (Vres*BlockDepthVert) / 100;
 		led++;
 	}
-
+	led += Offset[1];
+	led += Offset[2];
 	//rechter rij
-	for (j = 0; j < LedsRechts; j++)
+	for (j = Offset[2]; j < LedsRechts - Offset[3]; j++)
 	{
 		Blok[led].TLX = Hres - ((Hres * BlockDepthHori) / 100);
 		Blok[led].TLY = (Vres*j) / LedsRechts;
@@ -92,8 +93,10 @@ void ScreenCalc::Bereken_Grid()
 		Blok[led].BRY = (Vres*(j + 1)) / LedsRechts;
 		led++;
 	}
+	led += Offset[3];
+	led += Offset[4];
 	//onderste rij van rechts naar links
-	for (i = 0; i < LedsOnder; i++)
+	for (i = Offset[4]; i < LedsOnder-Offset[5]; i++)
 	{
 		Blok[led].TLX = Hres - (Hres*(i + 1)) / LedsOnder;	//
 		Blok[led].TLY = Vres - ((Vres*BlockDepthVert) / 100);
@@ -101,8 +104,10 @@ void ScreenCalc::Bereken_Grid()
 		Blok[led].BRY = Vres;
 		led++;
 	}
+	led += Offset[5];
+	led += Offset[6];
 	//linker rij onder naar boven
-	for (j = 0; j < LedsLinks; j++)
+	for (j = Offset[6]; j < LedsLinks-Offset[7]; j++)
 	{
 		Blok[led].TLX = 0;
 		Blok[led].TLY = Vres - (Vres*(j + 1)) / LedsLinks;
@@ -120,6 +125,7 @@ void ScreenCalc::Bereken()
 	}
 
 }
+
 
 void ScreenCalc::Gemiddelde(UINT8 *Led, int TopLeftX, int TopLeftY, int BottomRightY, int BottomRightX)
 {
@@ -182,5 +188,13 @@ void ScreenCalc::set_Gamma(float Gamma)
 		{
 			GammaE[i] = 0;
 		}
+	}
+}
+
+void ScreenCalc::SetOffset(int *offset)
+{
+	for (int i = 0; i < 8; i++)
+	{
+		Offset[i] = offset[i];
 	}
 }
