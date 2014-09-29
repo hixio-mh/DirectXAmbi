@@ -16,6 +16,9 @@ http://www.microsoft.com/en-us/download/details.aspx?id=6812
 It works right now. There are no known errors or bugs.
 If you find any please report them.
 
+Due to copyright protection it currently doesn't work with Silverlight (netflix.)
+When playing bluray with PowerDVD 14, you can just play the stream files and it works fine.
+
 At first startup it will start a wizard to help you configure the software.
 It is all terminal based, because I hate to create GUI's.
 Comments are all in dutch.
