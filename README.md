@@ -24,4 +24,5 @@ It is all terminal based, because I hate to create GUI's.
 Comments are all in dutch.
 
 For any question please contact me at jobvdv@gmail.com.
+For a precompiled version you also can contact me.
 
