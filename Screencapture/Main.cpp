@@ -91,7 +91,7 @@ int main()
 
 	Scherm.Bereken_Grid();					//stel de hoeveelheid leds in die worden gebruikt en bereken Grid Grootte
 	
-	Scherm.set_Gamma(0.35);
+	Scherm.set_Gamma(0.55);
 	
 	//Het programma moet eerst 0xff binnen krijgen als dat het geval is dan mag die beginnen met het oversturen
 	//van de hoeveelheid leds
@@ -143,7 +143,7 @@ int main()
 	pointer = Scherm.GeefLedPointer();	//Koppel de led bitstream aan de pointer
 	while (exit == false)
 	{
-		if (GetAsyncKeyState(VK_ESCAPE))						//Als escape is ingedrukt zet exit true
+		if (GetAsyncKeyState(VK_END))						//Als escape is ingedrukt zet exit true
 		{
 			exit = true;
 		}
@@ -182,7 +182,7 @@ void CreateConfig(std::ofstream &file, Direct3DCap &cap)
 	file << i << std::endl;
 
 	i = 0;
-	std::cout << "Hoeveel procent vanaf de zijkant (0-100)" << std::endl;
+	std::cout << "Hoeveel procent vanaf de bovenkant (0-100)" << std::endl;
 	scanf("%d", &i);
 	while (i < 1 || i > 100)
 	{
@@ -192,7 +192,7 @@ void CreateConfig(std::ofstream &file, Direct3DCap &cap)
 	file << i << std::endl;
 
 	i = 0;
-	std::cout << "Hoeveel procent vanaf de bovenkant (0-100)" << std::endl;
+	std::cout << "Hoeveel procent vanaf de zijkant (0-100)" << std::endl;
 	scanf("%d", &i);
 	while (i < 1 || i > 100)
 	{
