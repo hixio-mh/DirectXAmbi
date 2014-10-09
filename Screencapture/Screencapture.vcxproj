@@ -79,12 +79,16 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Direct3DCap.cpp" />
+    <ClCompile Include="DX11Cap.cpp" />
+    <ClCompile Include="GDICap.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="ScreenCalc.cpp" />
     <ClCompile Include="SerialClass.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Direct3DCap.h" />
+    <ClInclude Include="DX11Cap.h" />
+    <ClInclude Include="GDICap.h" />
     <ClInclude Include="ScreenCalc.h" />
     <ClInclude Include="SerialClass.h" />
   </ItemGroup>

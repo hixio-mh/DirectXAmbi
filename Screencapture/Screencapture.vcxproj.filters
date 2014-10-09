@@ -27,6 +27,12 @@
     <ClCompile Include="SerialClass.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="DX11Cap.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GDICap.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Direct3DCap.h">
@@ -36,6 +42,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="SerialClass.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DX11Cap.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GDICap.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

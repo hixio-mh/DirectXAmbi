@@ -7,7 +7,13 @@
 #include "Direct3DCap.h"
 #include "ScreenCalc.h"
 #include "SerialClass.h"
+#include "GDICap.h"
+#include "Direct3DCap.h"
+#include "DX11Cap.h"
 
+#define GDI_CAP 0
+#define D3D_CAP 1
+#define D11_CAP 2
 
 void CreateConfig(std::ofstream &file, Direct3DCap &cap);
 int *LedAmountTest();
@@ -16,8 +22,10 @@ int *LedAmountTest();
 int main()
 {
 	bool exit = false;						//dit is voor later een escape variable
+	int cap_method = GDI_CAP;
 
-	Direct3DCap Cap;						//init directx
+	GDICap Cap;
+	Direct3DCap D3DCap;						//init directx9
 
 	std::ifstream myinfile;
 	myinfile.open("./Config.txt");
@@ -28,14 +36,14 @@ int main()
 	{
 		myinfile.close();
 		std::ofstream myfile;
-
 		myfile.open("./Config.txt");
 
-		CreateConfig(myfile, Cap);
+		CreateConfig(myfile, D3DCap);
 
 		myfile.close();
 
 		myinfile.open("./Config.txt");
+		delete &Cap;
 	}
 
 	std::string STRING;
@@ -61,14 +69,23 @@ int main()
 		std::cout << "Config Loading went wrong! Please delete Config.txt and run this software again!" << std::endl;
 		return 0;
 	}
-
 	
-
 	std::cout << "Using screen: " << Config[0] << " for capturing" << std::endl;
 	Cap.init(Config[0]);							//
 
+	UINT32 *pBits;
+	switch (cap_method)
+	{
+	case GDI_CAP:
+		pBits = Cap.pBits;
+		break;
+	case D3D_CAP:
+		pBits =D3DCap.pBits;
+		break;
+	}
+
 	ScreenCalc Scherm(105,					//init de kleur bereken functies
-						Cap.pBits,			//De PixelData
+						pBits,			//De PixelData
 						Cap.return_hres(),	//De Hori Resolutie 
 						Cap.return_vres(),	//De Verti Resolutie
 						Config[1],					//Hoeveel procent die moet nemen aan de bovenkant/onderkant
@@ -78,16 +95,6 @@ int main()
 						Config[4],					//Leds Links
 						Config[6],				//Leds Rechts
 						Config[7]);					
-	int temp[8];
-	temp[0] = 1;
-	temp[1] = 5;
-	temp[2] = 3;
-	temp[3] = 1;
-	temp[4] = 4;
-	temp[5] = 2;
-	temp[6] = 1;
-	temp[7] = 2;
-	//Scherm.SetOffset(temp);
 
 	Scherm.Bereken_Grid();					//stel de hoeveelheid leds in die worden gebruikt en bereken Grid Grootte
 	
@@ -148,7 +155,16 @@ int main()
 			exit = true;
 		}
 		Scherm.Calc_Aspect_ratio();
-		Cap.capture();					//Maak screenshot en sla die op
+							//Maak screenshot en sla die op
+		switch (cap_method)
+		{
+		case GDI_CAP:
+			Cap.capture();
+			break;
+		case D3D_CAP:
+			D3DCap.capture();
+			break;
+		}
 
 		Scherm.Bereken();				//Bereken alle led kleuren
 

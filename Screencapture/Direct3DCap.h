@@ -13,7 +13,7 @@
 //Direct3D pointers
 
 
-class Direct3DCap
+class Direct3DCap 
 {
 public:
 	Direct3DCap();
@@ -25,7 +25,8 @@ public:
 	int return_vres();
 	int return_adapterCounnt();
 
-public:
+	UINT32	*pBits = NULL;
+private:
 	IDirect3D9* Direct3D = NULL;
 	IDirect3DDevice9* Direct3dDevice = NULL;
 	IDirect3DSurface9* Surface = NULL;
@@ -33,7 +34,6 @@ public:
 	D3DLOCKED_RECT lockedRect;
 	D3DDISPLAYMODE	ddm;
 
-	UINT32	*pBits = NULL;
 
 private:
 	UINT8 AdapterCount;
