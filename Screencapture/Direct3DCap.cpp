@@ -14,7 +14,7 @@ Direct3DCap::Direct3DCap() :scherm_nummer(0)
 			std::cout << "Unable to Get Adapter Display Mode" << std::endl;
 		}
 		//print alle schermen uit met hun bijbehorende resolutie
-		std::cout << "Scherm:" << i << " " << ddm.Width << "X" << ddm.Height << std::endl;
+		std::cout << "Screen:" << i << " " << ddm.Width << "X" << ddm.Height << std::endl;
 	}
 }
 

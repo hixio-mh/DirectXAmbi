@@ -64,7 +64,7 @@ int main()
 
 	
 
-	
+	std::cout << "Using screen: " << Config[0] << " for capturing" << std::endl;
 	Cap.init(Config[0]);							//
 
 	ScreenCalc Scherm(105,					//init de kleur bereken functies
@@ -137,7 +137,7 @@ int main()
 
 	Sleep(1000);	//Wacht 1 seconde op de arduino
 
-	std::cout << "Press ESC to quit capturing" << std::endl;
+	std::cout << "Press END to quit capturing" << std::endl;
 
 	UINT8 *pointer;						//Pointer voor de led bitstream
 	pointer = Scherm.GeefLedPointer();	//Koppel de led bitstream aan de pointer
@@ -151,7 +151,6 @@ int main()
 		Cap.capture();					//Maak screenshot en sla die op
 
 		Scherm.Bereken();				//Bereken alle led kleuren
-		//Scherm.Bereken((int)10);
 
 		SP->WriteData((char*)pointer, Scherm.geefLeds() * 3);	//Stuur alle data weg
 
@@ -172,31 +171,31 @@ void CreateConfig(std::ofstream &file, Direct3DCap &cap)
 	file.clear();
 	//onderstaande code vraagt om scherm
 	int i = 1;
-	std::cout << "Kies een van de bovenstaande schermen" << std::endl;
+	std::cout << "Choose one of the above screens" << std::endl;
 	scanf("%d", &i);
 	while (i >= cap.return_adapterCounnt() || i < 0)
 	{
-		std::cout << "Keuze: " << i << " is ongeldig \nKies een van de bovenstaande schermen" << std::endl;
+		std::cout << "Choice: " << i << " is invalid \nChoose one of the above screens" << std::endl;
 		scanf("%d", &i);
 	}
 	file << i << std::endl;
 
 	i = 0;
-	std::cout << "Hoeveel procent vanaf de bovenkant (0-100)" << std::endl;
+	std::cout << "How many percent should be captured from the top/bottom (0-100)" << std::endl;
 	scanf("%d", &i);
 	while (i < 1 || i > 100)
 	{
-		std::cout << "Keuze: " << i << " is ongeldig \n" << std::endl;
+		std::cout << "Choice: " << i << " is invalid \n" << std::endl;
 		scanf("%d", &i);
 	}
 	file << i << std::endl;
 
 	i = 0;
-	std::cout << "Hoeveel procent vanaf de zijkant (0-100)" << std::endl;
+	std::cout << "How many percent should be captured from the left/right side (0-100)" << std::endl;
 	scanf("%d", &i);
 	while (i < 1 || i > 100)
 	{
-		std::cout << "Keuze: " << i << " is ongeldig \n" << std::endl;
+		std::cout << "Choice: " << i << " is invalid \n" << std::endl;
 		scanf("%d", &i);
 	}
 	file << i << std::endl;
@@ -209,11 +208,11 @@ void CreateConfig(std::ofstream &file, Direct3DCap &cap)
 	file << pointer[3] << std::endl;
 	
 	i = 0;
-	std::cout << "Wat is de minimum zwartwaarde (0- 60)" << std::endl;
+	std::cout << "What is the minimum black treshold (0- 60)" << std::endl;
 	scanf("%d", &i);
 	while (i < 1 || i > 60)
 	{
-		std::cout << "Keuze: " << i << " is ongeldig \n" << std::endl;
+		std::cout << "Choice: " << i << " is invalid \n" << std::endl;
 		scanf("%d", &i);
 	}
 	file << i << std::endl;
