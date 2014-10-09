@@ -71,6 +71,7 @@ int main()
 	}
 	
 	std::cout << "Using screen: " << Config[0] << " for capturing" << std::endl;
+	D3DCap.init(Config[0]);
 	Cap.init(Config[0]);							//
 
 	UINT32 *pBits;
