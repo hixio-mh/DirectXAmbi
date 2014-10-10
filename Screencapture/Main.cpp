@@ -22,7 +22,7 @@ int *LedAmountTest();
 int main()
 {
 	bool exit = false;						//dit is voor later een escape variable
-	int cap_method = GDI_CAP;
+	int cap_method = D3D_CAP;
 
 	GDICap Cap;
 	Direct3DCap D3DCap;						//init directx9
@@ -155,6 +155,16 @@ int main()
 		{
 			exit = true;
 		}
+		else if (GetAsyncKeyState(VK_HOME))
+		{
+			cap_method++;
+			
+			if (cap_method > 1)
+				cap_method = 0;
+
+			std::cout << "Changed capture method to: " << cap_method << std::endl;
+		}
+
 		Scherm.Calc_Aspect_ratio();
 							//Maak screenshot en sla die op
 		switch (cap_method)
