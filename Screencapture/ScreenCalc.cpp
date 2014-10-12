@@ -29,6 +29,11 @@ ScreenCalc::~ScreenCalc()
 	Blok = nullptr;
 }
 
+void ScreenCalc::set_data(UINT32 *dataset)
+{
+	PixelData = dataset;
+}
+
 void ScreenCalc::Bereken_Grid()
 {
 	//Als Leds ongelijk is aan NULL dan moet je deze verwijderen omdat er dan al eentje bestaat. En we willen geen Memory Leaks :D

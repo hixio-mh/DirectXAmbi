@@ -22,6 +22,7 @@ public:
 	void Bereken();
 
 	void SetOffset(int *Offset);
+	void set_data(UINT32 *dataset);
 
 	float Calc_Aspect_ratio();
 

@@ -23,6 +23,7 @@ int main()
 {
 	bool exit = false;						//dit is voor later een escape variable
 	int cap_method = D3D_CAP;
+	float gamma = 0.6;
 
 	GDICap Cap;
 	Direct3DCap D3DCap;						//init directx9
@@ -30,7 +31,7 @@ int main()
 	std::ifstream myinfile;
 	myinfile.open("./Config.txt");
 
-	
+
 	//Als het bestand is geopend bestaat die al dus sla je het maken over
 	if (!myinfile.is_open())
 	{
@@ -47,9 +48,9 @@ int main()
 	}
 
 	std::string STRING;
-	int Config[8] = { -1 };
+	int Config[9] = { -1 };
 
-	for (int i = 0; i < 8; i++)
+	for (int i = 0; i < 9; i++)
 	{
 		if (myinfile.eof())
 			break;
@@ -60,16 +61,16 @@ int main()
 
 	//Check of config laden goed is gelukt
 	int i = 0;
-	while (Config[i] != -1 && i < 8)
+	while (Config[i] != -1 && i < 9)
 	{
 		i++;
 	}
-	if (i < 8)
+	if (i < 9)
 	{
 		std::cout << "Config Loading went wrong! Please delete Config.txt and run this software again!" << std::endl;
 		return 0;
 	}
-	
+
 	std::cout << "Using screen: " << Config[0] << " for capturing" << std::endl;
 	D3DCap.init(Config[0]);
 	Cap.init(Config[0]);							//
@@ -81,33 +82,48 @@ int main()
 		pBits = Cap.pBits;
 		break;
 	case D3D_CAP:
-		pBits =D3DCap.pBits;
+		pBits = D3DCap.pBits;
 		break;
 	}
 
 	ScreenCalc Scherm(105,					//init de kleur bereken functies
-						pBits,			//De PixelData
-						Cap.return_hres(),	//De Hori Resolutie 
-						Cap.return_vres(),	//De Verti Resolutie
-						Config[1],					//Hoeveel procent die moet nemen aan de bovenkant/onderkant
-						Config[2],					//Hoeveel procent die aan de zijkant moet nemen
-						Config[3],				//Leds Boven
-						Config[5],					//Leds Onder
-						Config[4],					//Leds Links
-						Config[6],				//Leds Rechts
-						Config[7]);					
+		pBits,			//De PixelData
+		Cap.return_hres(),	//De Hori Resolutie 
+		Cap.return_vres(),	//De Verti Resolutie
+		Config[1],					//Hoeveel procent die moet nemen aan de bovenkant/onderkant
+		Config[2],					//Hoeveel procent die aan de zijkant moet nemen
+		Config[3],				//Leds Boven
+		Config[5],					//Leds Onder
+		Config[4],					//Leds Links
+		Config[6],				//Leds Rechts
+		Config[7]);
 
 	Scherm.Bereken_Grid();					//stel de hoeveelheid leds in die worden gebruikt en bereken Grid Grootte
-	
-	Scherm.set_Gamma(0.55);
-	
+
+	Scherm.set_Gamma(gamma);
+
 	//Het programma moet eerst 0xff binnen krijgen als dat het geval is dan mag die beginnen met het oversturen
 	//van de hoeveelheid leds
 	//Als die hoeveelheden overeenkomen mag die beginnen met het zenden van led data
-	Serial* SP = new Serial("\\\\.\\COM5");
+	std::string String;
+	String = "\\\\.\\COM";
+	String += std::to_string(Config[8]);
+	char *temp = new char[String.size() + 1];
+	std::copy(String.begin(), String.end(), temp);
+	temp[String.size()] = '\0';
+	Serial* SP = new Serial(temp);
+
+	delete[] temp;
+	temp = nullptr;
+
 
 	if (SP->IsConnected())
 		std::cout << "Connected with COM5" << std::endl;
+	else
+	{
+		std::cout << "Communication Error. Exiting" << std::endl;
+		return 0;
+	}
 
 	char Rx_buffer[100] = "";	//Dit is de Rx_buffer deze moet een char zijn
 
@@ -115,7 +131,7 @@ int main()
 	std::cout << "Waiting for Arduino. Press ESC to quit" << std::endl;
 
 	SP->ReadData(Rx_buffer, 2);
-	while(Rx_buffer[0] != '0') //blijf hier hangen tot de arduino klaar is
+	while (Rx_buffer[0] != '0') //blijf hier hangen tot de arduino klaar is
 	{
 		Sleep(100);
 		SP->ReadData(Rx_buffer, 2);
@@ -128,14 +144,14 @@ int main()
 			std::cout << "Something went wrong with communication. Check baudrate settings and COM port" << std::endl;
 			return 0;	//beeindig de software
 		}
-	}	
+	}
 
 	Rx_buffer[0] = '0';
 
 	std::cout << "Got response from arduino sending amount of leds" << std::endl;
 
 	//Stuur de hoeveelheid leds naar de arduino
-	UINT8 Tx_buffer[600*3];
+	UINT8 Tx_buffer[600 * 3];
 
 	ZeroMemory(Tx_buffer, 600 * 3);
 	Tx_buffer[0] = Scherm.geefLeds() >> 8 & 0x00FF;
@@ -158,21 +174,39 @@ int main()
 		else if (GetAsyncKeyState(VK_HOME))
 		{
 			cap_method++;
-			
+
 			if (cap_method > 1)
 				cap_method = 0;
 
 			std::cout << "Changed capture method to: " << cap_method << std::endl;
 		}
+		else if (GetAsyncKeyState(VK_F12))
+		{
+			gamma += 0.01;
+			Scherm.set_Gamma(gamma);
+		}
+		else if (GetAsyncKeyState(VK_F11))
+		{
+			gamma -= 0.01;
+			Scherm.set_Gamma(gamma);
+		}
+		else if (GetAsyncKeyState(VK_F10))
+		{
+			std::cout << "Gamma : " << gamma << std::endl;
+		}
 
 		Scherm.Calc_Aspect_ratio();
-							//Maak screenshot en sla die op
+		//Maak screenshot en sla die op
 		switch (cap_method)
 		{
 		case GDI_CAP:
+			pBits = Cap.pBits;
+			Scherm.set_data(pBits);
 			Cap.capture();
 			break;
 		case D3D_CAP:
+			pBits = D3DCap.pBits;
+			Scherm.set_data(pBits);
 			D3DCap.capture();
 			break;
 		}
@@ -189,7 +223,7 @@ int main()
 		}
 		Rx_buffer[0] = '0';
 	}
-	
+
 	return 0;
 }
 
@@ -231,11 +265,21 @@ void CreateConfig(std::ofstream &file, Direct3DCap &cap)
 
 	file << pointer[0] << std::endl;
 	file << pointer[1] << std::endl;
-	file << pointer[2] << std::endl;	
+	file << pointer[2] << std::endl;
 	file << pointer[3] << std::endl;
-	
+
 	i = 0;
 	std::cout << "What is the minimum black treshold (0- 60)" << std::endl;
+	scanf("%d", &i);
+	while (i < 1 || i > 60)
+	{
+		std::cout << "Choice: " << i << " is invalid \n" << std::endl;
+		scanf("%d", &i);
+	}
+	file << i << std::endl;
+
+	i = 0;
+	std::cout << "Which COM port is the arduino on" << std::endl;
 	scanf("%d", &i);
 	while (i < 1 || i > 60)
 	{
@@ -290,7 +334,7 @@ int *LedAmountTest()
 	std::cout << "Press ESC to quit" << std::endl;
 
 	//onderstaande stukje code zal blijven draaien tot je op ESC drukt
-	static int leds[4] = { 0 },i=0;
+	static int leds[4] = { 0 }, i = 0;
 	int offset = 0;
 	leds[0]++;
 	while (i <4)
@@ -309,9 +353,9 @@ int *LedAmountTest()
 			{
 				for (int k = 0; k < 3; k++)
 				{
-					Tx_buffer[(j+offset)*3 + k] = 0xff;
+					Tx_buffer[(j + offset) * 3 + k] = 0xff;
 				}
-				
+
 			}
 
 			SP->WriteData((char*)Tx_buffer, 1800);
