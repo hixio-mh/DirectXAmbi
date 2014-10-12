@@ -16,7 +16,7 @@
 #define D11_CAP 2
 
 void CreateConfig(std::ofstream &file, Direct3DCap &cap);
-int *LedAmountTest();
+int *LedAmountTest(char *);
 
 
 int main()
@@ -44,7 +44,6 @@ int main()
 		myfile.close();
 
 		myinfile.open("./Config.txt");
-		delete &Cap;
 	}
 
 	std::string STRING;
@@ -113,9 +112,10 @@ int main()
 	temp[String.size()] = '\0';
 	Serial* SP = new Serial(temp);
 
+	
+
 	delete[] temp;
 	temp = nullptr;
-
 
 	if (SP->IsConnected())
 		std::cout << "Connected with COM5" << std::endl;
@@ -261,7 +261,22 @@ void CreateConfig(std::ofstream &file, Direct3DCap &cap)
 	}
 	file << i << std::endl;
 
-	int *pointer = LedAmountTest();
+	int j = 0;
+	std::cout << "Which COM port is the arduino on" << std::endl;
+	scanf("%d", &j);
+	while (j < 0 || j > 60)
+	{
+		std::cout << "Choice: " << i << " is invalid \n" << std::endl;
+		scanf("%d", &j);
+	}
+	std::string String;
+	String = "\\\\.\\COM";
+	String += std::to_string(j);
+	char *temp = new char[String.size() + 1];
+	std::copy(String.begin(), String.end(), temp);
+	temp[String.size()] = '\0';
+
+	int *pointer = LedAmountTest(temp);
 
 	file << pointer[0] << std::endl;
 	file << pointer[1] << std::endl;
@@ -279,19 +294,13 @@ void CreateConfig(std::ofstream &file, Direct3DCap &cap)
 	file << i << std::endl;
 
 	i = 0;
-	std::cout << "Which COM port is the arduino on" << std::endl;
-	scanf("%d", &i);
-	while (i < 1 || i > 60)
-	{
-		std::cout << "Choice: " << i << " is invalid \n" << std::endl;
-		scanf("%d", &i);
-	}
-	file << i << std::endl;
+	
+	file << j << std::endl;
 }
 
-int *LedAmountTest()
+int *LedAmountTest(char *Comm)
 {
-	Serial* SP = new Serial("\\\\.\\COM5");
+	Serial* SP = new Serial(Comm);
 
 	if (SP->IsConnected())
 		std::cout << "Connected with COM5" << std::endl;
