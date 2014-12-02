@@ -164,9 +164,16 @@ int main()
 	std::cout << "Press END to quit capturing" << std::endl;
 
 	UINT8 *pointer;						//Pointer voor de led bitstream
+	clock_t klok1;
+	clock_t klok2 = 50;
 	pointer = Scherm.GeefLedPointer();	//Koppel de led bitstream aan de pointer
 	while (exit == false)
 	{
+		std::cout << "                     " << "\r";
+		std::cout << ((clock() - klok2)) << "\r";
+		//std::cout << ((1* CLOCKS_PER_SEC) / (clock() - klok2)) << "\r";
+		klok2 = clock();
+
 		if (GetAsyncKeyState(VK_END))						//Als escape is ingedrukt zet exit true
 		{
 			exit = true;
@@ -195,7 +202,7 @@ int main()
 			std::cout << "Gamma : " << gamma << std::endl;
 		}
 
-		Scherm.Calc_Aspect_ratio();
+//Scherm.Calc_Aspect_ratio();
 		//Maak screenshot en sla die op
 		switch (cap_method)
 		{
@@ -210,14 +217,13 @@ int main()
 			D3DCap.capture();
 			break;
 		}
-
 		Scherm.Bereken();				//Bereken alle led kleuren
 
 		SP->WriteData((char*)pointer, Scherm.geefLeds() * 3);	//Stuur alle data weg
 
-
+		klok1 = clock();
 		SP->ReadData(Rx_buffer, 10);
-		while (Rx_buffer[0] != '1')		//Wacht tot arduino weer klaar is
+		while (Rx_buffer[0] != '1' || ((klok1 - clock())/CLOCKS_PER_SEC) > (float)0.5)		//Wacht tot arduino weer klaar is
 		{
 			SP->ReadData(Rx_buffer, 100);
 		}
