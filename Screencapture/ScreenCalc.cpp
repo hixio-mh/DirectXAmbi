@@ -19,7 +19,7 @@ LedsBoven(boven), LedsOnder(onder), LedsLinks(links), LedsRechts(rechts), BlackL
 ScreenCalc::~ScreenCalc()
 {
 	//Ruim alles netjes op
-	delete[] LedData;
+/*	delete[] LedData;
 	delete[] GammaE;
 	delete[] Blok;
 
@@ -27,6 +27,7 @@ ScreenCalc::~ScreenCalc()
 	PixelData = nullptr;
 	LedData = nullptr;
 	Blok = nullptr;
+*/
 }
 
 void ScreenCalc::set_data(UINT32 *dataset)

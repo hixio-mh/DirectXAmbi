@@ -3,6 +3,7 @@
 #include <fstream>
 #include <ctime>
 #include <windows.h>
+#include <thread>
 
 #include "Direct3DCap.h"
 #include "ScreenCalc.h"
@@ -17,6 +18,9 @@
 
 void CreateConfig(std::ofstream &file, Direct3DCap &cap);
 int *LedAmountTest(char *);
+void send_data(Serial* , char * , ScreenCalc &, UINT8 *);
+
+UINT8 Thread_comm = 0x01;
 
 
 int main()
@@ -167,6 +171,9 @@ int main()
 	clock_t klok1;
 	clock_t klok2 = 50;
 	pointer = Scherm.GeefLedPointer();	//Koppel de led bitstream aan de pointer
+	// maak een thread die nu nog niks doet
+	std::thread uart(send_data,SP,Rx_buffer,Scherm,pointer);
+
 	while (exit == false)
 	{
 		std::cout << "                     " << "\r";
@@ -202,8 +209,12 @@ int main()
 			std::cout << "Gamma : " << gamma << std::endl;
 		}
 
+
+		//start een thread die de data stuurt
+
 //Scherm.Calc_Aspect_ratio();
 		//Maak screenshot en sla die op
+
 		switch (cap_method)
 		{
 		case GDI_CAP:
@@ -218,19 +229,30 @@ int main()
 			break;
 		}
 		Scherm.Bereken();				//Bereken alle led kleuren
-
-		SP->WriteData((char*)pointer, Scherm.geefLeds() * 3);	//Stuur alle data weg
-
-		klok1 = clock();
-		SP->ReadData(Rx_buffer, 10);
-		while (Rx_buffer[0] != '1' || ((klok1 - clock())/CLOCKS_PER_SEC) > (float)0.5)		//Wacht tot arduino weer klaar is
-		{
-			SP->ReadData(Rx_buffer, 100);
-		}
-		Rx_buffer[0] = '0';
+		//wacht tot alle data verzonden is en we weer antwoord hebben gehad dat alles in orde is voordat we weer verder gaan
+		
 	}
-
+	Thread_comm &= !0x01;
+	uart.join();
 	return 0;
+}
+
+// Dit moet in een andere thread gebeuren
+void send_data(Serial* SP, char * Rx_buffer, ScreenCalc &Scherm, UINT8 *pointer)
+{
+	clock_t klok1;
+	while (Thread_comm == 0x01)
+	{
+			SP->WriteData((char*)pointer, Scherm.geefLeds() * 3);	//Stuur alle data weg
+
+			klok1 = clock();
+			SP->ReadData(Rx_buffer, 10);
+			while (Rx_buffer[0] != '1' || ((klok1 - clock()) / CLOCKS_PER_SEC) > (float)0.5)		//Wacht tot arduino weer klaar is
+			{
+				SP->ReadData(Rx_buffer, 100);
+			}
+			Rx_buffer[0] = '0';
+	}
 }
 
 void CreateConfig(std::ofstream &file, Direct3DCap &cap)
