@@ -17,6 +17,7 @@ It works right now. There are no known errors or bugs.
 If you find any please report them.
 
 When capturing Netflix use GDI. If you want to capture games with D3D then make sure they are windowed.
+GDI currently only captures your primary monitor. I'm working on a fix for this.
 When playing bluray with PowerDVD 14, you can just play the stream files and it works fine.
 
 At first startup it will start a wizard to help you configure the software.
