@@ -17,7 +17,6 @@ GDICap::GDICap()
 
 GDICap::~GDICap()
 {
-	ReleaseDC(hDesktopWnd, dcDesktop);
 	DeleteDC(dcCapture);
 	DeleteObject(hCaptureBMP);
 }

@@ -108,6 +108,7 @@ void ScreenCalc::Bereken()
 {
 	for (int i = 0; i < LedAantal; i++)
 	{
+		//Dit zou nog in een aggressieve PID gedaan kunnen worden om een vloeiender effect te kunnen krijgen
 		Gemiddelde(LedData + (i * 3), Blok[i].TLX, Blok[i].TLY, Blok[i].BRY, Blok[i].BRX);
 	}
 

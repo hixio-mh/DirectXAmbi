@@ -2,8 +2,9 @@
 #include <iostream>
 #include <fstream>
 #include <ctime>
-#include <windows.h>
 #include <thread>
+#include <windows.h>
+#include <Dwmapi.h>
 
 #include "Direct3DCap.h"
 #include "ScreenCalc.h"
@@ -12,6 +13,9 @@
 #include "Direct3DCap.h"
 #include "DX11Cap.h"
 
+#pragma comment(lib, "Dwmapi.lib")
+
+
 #define GDI_CAP 0
 #define D3D_CAP 1
 #define D11_CAP 2
@@ -19,14 +23,19 @@
 void CreateConfig(std::ofstream &file, Direct3DCap &cap);
 int *LedAmountTest(char *);
 void send_data(Serial* , char * , ScreenCalc &, UINT8 *);
+void calc(ScreenCalc &);
+BOOL DisableAeroTheme();
 
 UINT8 Thread_comm = 0x01;
 
 
 int main()
 {
+	std::cout << "Aero will be disabled for performance reason!" << std::endl;
+	DisableAeroTheme();
+
 	bool exit = false;						//dit is voor later een escape variable
-	int cap_method = D3D_CAP;
+	int cap_method = GDI_CAP;
 	float gamma = 0.6;
 
 	GDICap Cap;
@@ -91,8 +100,8 @@ int main()
 
 	ScreenCalc Scherm(105,					//init de kleur bereken functies
 		pBits,			//De PixelData
-		Cap.return_hres(),	//De Hori Resolutie 
-		Cap.return_vres(),	//De Verti Resolutie
+		D3DCap.return_hres(),	//De Hori Resolutie 
+		D3DCap.return_vres(),	//De Verti Resolutie
 		Config[1],					//Hoeveel procent die moet nemen aan de bovenkant/onderkant
 		Config[2],					//Hoeveel procent die aan de zijkant moet nemen
 		Config[3],				//Leds Boven
@@ -177,22 +186,28 @@ int main()
 	while (exit == false)
 	{
 		std::cout << "                     " << "\r";
-		std::cout << ((clock() - klok2)) << "\r";
-		//std::cout << ((1* CLOCKS_PER_SEC) / (clock() - klok2)) << "\r";
+		std::cout << "FPS: " << ((1 * CLOCKS_PER_SEC) / (clock() - klok2)) << "\r";
 		klok2 = clock();
 
 		if (GetAsyncKeyState(VK_END))						//Als escape is ingedrukt zet exit true
 		{
 			exit = true;
 		}
-		else if (GetAsyncKeyState(VK_HOME))
+		else if (GetAsyncKeyState(VK_F8))
 		{
-			cap_method++;
+			pBits = Cap.pBits;
+			Scherm.set_data(pBits);
+			cap_method = GDI_CAP;
+			std::cout << "Changed capture method to GDI " << std::endl;
 
-			if (cap_method > 1)
-				cap_method = 0;
+		}
+		else if (GetAsyncKeyState(VK_F9))
+		{
 
-			std::cout << "Changed capture method to: " << cap_method << std::endl;
+			pBits = D3DCap.pBits;
+			Scherm.set_data(pBits);
+			cap_method = D3D_CAP;
+			std::cout << "Changed capture method to D3D " << std::endl;
 		}
 		else if (GetAsyncKeyState(VK_F12))
 		{
@@ -214,25 +229,20 @@ int main()
 
 //Scherm.Calc_Aspect_ratio();
 		//Maak screenshot en sla die op
-
 		switch (cap_method)
 		{
 		case GDI_CAP:
-			pBits = Cap.pBits;
-			Scherm.set_data(pBits);
 			Cap.capture();
 			break;
 		case D3D_CAP:
-			pBits = D3DCap.pBits;
-			Scherm.set_data(pBits);
 			D3DCap.capture();
 			break;
 		}
-		Scherm.Bereken();				//Bereken alle led kleuren
+		Scherm.Bereken();
 		//wacht tot alle data verzonden is en we weer antwoord hebben gehad dat alles in orde is voordat we weer verder gaan
 		
 	}
-	Thread_comm &= !0x01;
+	Thread_comm = 0;
 	uart.join();
 	return 0;
 }
@@ -247,7 +257,7 @@ void send_data(Serial* SP, char * Rx_buffer, ScreenCalc &Scherm, UINT8 *pointer)
 
 			klok1 = clock();
 			SP->ReadData(Rx_buffer, 10);
-			while (Rx_buffer[0] != '1' || ((klok1 - clock()) / CLOCKS_PER_SEC) > (float)0.5)		//Wacht tot arduino weer klaar is
+			while (Rx_buffer[0] != '1' || ((clock() - klok1) / CLOCKS_PER_SEC) > (float)0.5)		//Wacht tot arduino weer klaar is
 			{
 				SP->ReadData(Rx_buffer, 100);
 			}
@@ -417,4 +427,40 @@ int *LedAmountTest(char *Comm)
 	}
 	SP->~Serial();
 	return leds;
+}
+
+BOOL DisableAeroTheme()
+{
+	HRESULT hr = S_OK;
+	BOOL isDwmCompositiondEnabled = FALSE;
+
+	hr = DwmIsCompositionEnabled(&isDwmCompositiondEnabled);
+	if (SUCCEEDED(hr))
+	{
+		//printf("isDwmCompositiondEnabled: %d\n", isDwmCompositiondEnabled);
+	}
+	else
+	{
+		printf("DwmIsCompositionEnabledFn is Failed (Or) DWM composition is not Enabled!, Error Code:%d\n", GetLastError());
+
+	}
+	//if DWM composition is Enabled, Disable DWM composition.
+	if (isDwmCompositiondEnabled)
+	{
+		//Disable Desktop Window Manager (DWM) composition.
+		hr = DwmEnableComposition(FALSE);
+		if (SUCCEEDED(hr))
+		{
+			return TRUE;
+		}
+		else
+		{
+			printf("DwmEnableCompositionFn is Failed, Error Code:%d\n", GetLastError());
+		}
+	}
+	else
+	{
+		printf("DWM composition is not Enabled\n");
+		return FALSE;
+	}
 }
