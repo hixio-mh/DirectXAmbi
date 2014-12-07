@@ -34,6 +34,7 @@ private:
 
 	float Hoogte;
 	float Lengte;
+	float K_P;
 	
 	int Hres, Vres;
 	int BlockDepthHori;	//in procent
@@ -48,6 +49,7 @@ private:
 
 	UINT32 *PixelData;
 	UINT8 *LedData;	//multidimensio pointer
+	UINT8 *OldLedData;	//PID
 
 	Grid *Blok;
 	

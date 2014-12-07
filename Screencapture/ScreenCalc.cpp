@@ -4,7 +4,8 @@
 ScreenCalc::ScreenCalc(float Diago, UINT32 *DataSet, int hres, int vres, int BlockH, 
 						int BlockV, int boven, int onder, int links, int rechts, int Black) 
 :Hres(hres), Vres(vres), LedData(NULL), BlockDepthHori(BlockH), BlockDepthVert(BlockV), Blok(NULL), 
-LedsBoven(boven), LedsOnder(onder), LedsLinks(links), LedsRechts(rechts), BlackLevel(Black), GammaE(NULL)
+LedsBoven(boven), LedsOnder(onder), LedsLinks(links), LedsRechts(rechts), BlackLevel(Black), 
+GammaE(NULL), OldLedData(NULL), K_P(0.25)
 {
 	double verhouding;
 	verhouding = (double)Hres / (double)Vres;
@@ -12,6 +13,8 @@ LedsBoven(boven), LedsOnder(onder), LedsLinks(links), LedsRechts(rechts), BlackL
 	Lengte = Hoogte * verhouding;
 	PixelData = DataSet;
 	LedAantal = LedsBoven + LedsLinks + LedsRechts + LedsOnder;
+	OldLedData = new UINT8[LedAantal*3];	//Voor PID
+	ZeroMemory(OldLedData, LedAantal * 3);
 	GammaE = new int[256] {0};
 	Offset = new int[8] {0};
 }
@@ -106,10 +109,23 @@ void ScreenCalc::Bereken_Grid()
 
 void ScreenCalc::Bereken()
 {
+	int deltaB,deltaG,deltaR;
 	for (int i = 0; i < LedAantal; i++)
 	{
 		//Dit zou nog in een aggressieve PID gedaan kunnen worden om een vloeiender effect te kunnen krijgen
 		Gemiddelde(LedData + (i * 3), Blok[i].TLX, Blok[i].TLY, Blok[i].BRY, Blok[i].BRX);
+
+		deltaR = LedData[i * 3] - OldLedData[i * 3];
+		deltaG = LedData[i * 3 + 1] - OldLedData[i * 3 + 1];
+		deltaB = LedData[i * 3 + 2] - OldLedData[i * 3 + 2];
+
+		LedData[i * 3] = OldLedData[i * 3] + deltaR * K_P;
+		LedData[i * 3 + 1] = OldLedData[i * 3 + 1] + deltaG * K_P;
+		LedData[i * 3 + 2] = OldLedData[i * 3 + 2] + deltaB * K_P;
+
+		OldLedData[i * 3] = LedData[i * 3];
+		OldLedData[i * 3 + 1] = LedData[i * 3 + 1];
+		OldLedData[i * 3 + 2] = LedData[i * 3 + 2];
 	}
 
 }
@@ -120,6 +136,8 @@ void ScreenCalc::Gemiddelde(UINT8 *Led, int TopLeftX, int TopLeftY, int BottomRi
 	int j = 0;
 	int r = 0, g = 0, b = 0;
 	int y, x;
+
+	
 
 	for (x = TopLeftX; x < BottomRightX; x++)
 	{
@@ -145,7 +163,6 @@ void ScreenCalc::Gemiddelde(UINT8 *Led, int TopLeftX, int TopLeftY, int BottomRi
 	}
 	if (j == 0)
 		j = 1;
-	//std::cout << r << '/' << temp << std::endl;
 
 	Led[0] = GammaE[(g / j)];
 	Led[1] = GammaE[(r / j)];

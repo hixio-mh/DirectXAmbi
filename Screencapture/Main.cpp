@@ -199,6 +199,7 @@ int main()
 			Scherm.set_data(pBits);
 			cap_method = GDI_CAP;
 			std::cout << "Changed capture method to GDI " << std::endl;
+			Sleep(100);
 
 		}
 		else if (GetAsyncKeyState(VK_F9))
@@ -208,6 +209,7 @@ int main()
 			Scherm.set_data(pBits);
 			cap_method = D3D_CAP;
 			std::cout << "Changed capture method to D3D " << std::endl;
+			Sleep(100);
 		}
 		else if (GetAsyncKeyState(VK_F12))
 		{
