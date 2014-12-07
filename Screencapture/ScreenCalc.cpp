@@ -1,11 +1,11 @@
 #include "ScreenCalc.h"
 #include <iostream>
 
-ScreenCalc::ScreenCalc(float Diago, UINT32 *DataSet, int hres, int vres, int BlockH, 
-						int BlockV, int boven, int onder, int links, int rechts, int Black) 
+ScreenCalc::ScreenCalc(float Diago, UINT32 *DataSet, int hres, int vres, int BlockV, 
+						int BlockH, int boven, int onder, int links, int rechts, int Black) 
 :Hres(hres), Vres(vres), LedData(NULL), BlockDepthHori(BlockH), BlockDepthVert(BlockV), Blok(NULL), 
 LedsBoven(boven), LedsOnder(onder), LedsLinks(links), LedsRechts(rechts), BlackLevel(Black), 
-GammaE(NULL), OldLedData(NULL), K_P(0.25)
+GammaE(NULL), OldLedData(NULL), K_P(0.1)
 {
 	double verhouding;
 	verhouding = (double)Hres / (double)Vres;
@@ -208,10 +208,10 @@ float ScreenCalc::Calc_Aspect_ratio()
 {
 	//Deze functie berekend of de afgespeelde video het scherm vult of niet.
 	//Op het moment zoekt die een zwarte balk.
-	//Deze methode werkt niet
+	//Deze methode werkt niet helemaal goed. als er zwart beeld is zal die alles zien als niks
 	int i = 0;
 	int j = 0;
-	while (((PixelData[(j*Hres) + i] >> 16) & 0xFF) < 0x05 && ((PixelData[(j*Hres) + i] >> 8) & 0xFF) < 0x05 && ((PixelData[(j*Hres) + i]) & 0xFF) < 0x05)
+	while ((((PixelData[(j*Hres) + i] >> 16) & 0xFF) < 0x01) && (((PixelData[(j*Hres) + i] >> 8) & 0xFF) < 0x01) && (((PixelData[(j*Hres) + i]) & 0xFF) < 0x01))
 	{
 		if (i > Vres)
 		{
@@ -221,5 +221,6 @@ float ScreenCalc::Calc_Aspect_ratio()
 		else
 			i++;
 	}
+	std::cout << "\t\t vertical offset: " << j;
 	return 0;
 }

@@ -241,6 +241,7 @@ int main()
 			break;
 		}
 		Scherm.Bereken();
+		Scherm.Calc_Aspect_ratio();
 		//wacht tot alle data verzonden is en we weer antwoord hebben gehad dat alles in orde is voordat we weer verder gaan
 		
 	}
