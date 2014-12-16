@@ -5,9 +5,17 @@
       <Configuration>Debug</Configuration>
       <Platform>Win32</Platform>
     </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
     <ProjectConfiguration Include="Release|Win32">
       <Configuration>Release</Configuration>
       <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
@@ -28,6 +36,12 @@
     <PlatformToolset>v120</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <PlatformToolset>v120</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <PlatformToolset>v120</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -58,6 +72,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>C:\Users\Job-Game\Documents\visual studio 2013\Projects\Screencapture\Screencapture\jack\lib\libjack.lib;C:\Users\Job-Game\Documents\visual studio 2013\Projects\Screencapture\Screencapture\jack\lib\libjackserver.lib;C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\libfftw3-3.lib;C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\libfftw3l-3.lib;C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\libfftw3f-3.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -75,20 +90,21 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalDependencies>libjack64;libjackserver64;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Direct3DCap.cpp" />
-    <ClCompile Include="DX11Cap.cpp" />
     <ClCompile Include="GDICap.cpp" />
+    <ClCompile Include="JackFFT.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="ScreenCalc.cpp" />
     <ClCompile Include="SerialClass.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Direct3DCap.h" />
-    <ClInclude Include="DX11Cap.h" />
     <ClInclude Include="GDICap.h" />
+    <ClInclude Include="JackFFT.h" />
     <ClInclude Include="ScreenCalc.h" />
     <ClInclude Include="SerialClass.h" />
   </ItemGroup>

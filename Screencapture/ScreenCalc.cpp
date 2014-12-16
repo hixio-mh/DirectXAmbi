@@ -5,7 +5,7 @@ ScreenCalc::ScreenCalc(float Diago, UINT32 *DataSet, int hres, int vres, int Blo
 						int BlockH, int boven, int onder, int links, int rechts, int Black) 
 :Hres(hres), Vres(vres), LedData(NULL), BlockDepthHori(BlockH), BlockDepthVert(BlockV), Blok(NULL), 
 LedsBoven(boven), LedsOnder(onder), LedsLinks(links), LedsRechts(rechts), BlackLevel(Black), 
-GammaE(NULL), OldLedData(NULL), K_P(0.1)
+GammaE(NULL), OldLedData(NULL), K_P(0.15)
 {
 	double verhouding;
 	verhouding = (double)Hres / (double)Vres;

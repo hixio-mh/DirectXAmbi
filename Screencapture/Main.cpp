@@ -10,22 +10,20 @@
 #include "ScreenCalc.h"
 #include "SerialClass.h"
 #include "GDICap.h"
-#include "Direct3DCap.h"
-#include "DX11Cap.h"
+#include "JackFFT.h"
 
 #pragma comment(lib, "Dwmapi.lib")
 
 
 #define GDI_CAP 0
 #define D3D_CAP 1
-#define D11_CAP 2
+#define JAC_CAP 2
 
 void CreateConfig(std::ofstream &file, Direct3DCap &cap);
 int *LedAmountTest(char *);
 void send_data(Serial* , char * , ScreenCalc &, UINT8 *);
 void calc(ScreenCalc &);
 BOOL DisableAeroTheme();
-
 UINT8 Thread_comm = 0x01;
 
 
@@ -35,11 +33,14 @@ int main()
 	DisableAeroTheme();
 
 	bool exit = false;						//dit is voor later een escape variable
-	int cap_method = GDI_CAP;
+	int cap_method = D3D_CAP;
 	float gamma = 0.6;
 
 	GDICap Cap;
 	Direct3DCap D3DCap;						//init directx9
+	JackFFT JACK;
+	while (1);
+
 
 	std::ifstream myinfile;
 	myinfile.open("./Config.txt");
@@ -96,6 +97,8 @@ int main()
 	case D3D_CAP:
 		pBits = D3DCap.pBits;
 		break;
+	case JAC_CAP:
+		pBits = JACK.pBits;
 	}
 
 	ScreenCalc Scherm(105,					//init de kleur bereken functies

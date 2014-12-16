@@ -27,10 +27,10 @@
     <ClCompile Include="SerialClass.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="DX11Cap.cpp">
+    <ClCompile Include="GDICap.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="GDICap.cpp">
+    <ClCompile Include="JackFFT.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -44,10 +44,10 @@
     <ClInclude Include="SerialClass.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="DX11Cap.h">
+    <ClInclude Include="GDICap.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="GDICap.h">
+    <ClInclude Include="JackFFT.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
