@@ -39,7 +39,6 @@ int main()
 	GDICap Cap;
 	Direct3DCap D3DCap;						//init directx9
 	JackFFT JACK;
-	while (1);
 
 
 	std::ifstream myinfile;
@@ -188,8 +187,8 @@ int main()
 
 	while (exit == false)
 	{
-		std::cout << "                     " << "\r";
-		std::cout << "FPS: " << ((1 * CLOCKS_PER_SEC) / (clock() - klok2)) << "\r";
+		//std::cout << "                     " << "\r";
+		//std::cout << "FPS: " << ((1 * CLOCKS_PER_SEC) / (clock() - klok2)) << "\r";
 		klok2 = clock();
 
 		if (GetAsyncKeyState(VK_END))						//Als escape is ingedrukt zet exit true
@@ -198,6 +197,7 @@ int main()
 		}
 		else if (GetAsyncKeyState(VK_F8))
 		{
+			JACK.stop();
 			pBits = Cap.pBits;
 			Scherm.set_data(pBits);
 			cap_method = GDI_CAP;
@@ -207,11 +207,20 @@ int main()
 		}
 		else if (GetAsyncKeyState(VK_F9))
 		{
-
+			JACK.stop();
 			pBits = D3DCap.pBits;
 			Scherm.set_data(pBits);
 			cap_method = D3D_CAP;
 			std::cout << "Changed capture method to D3D " << std::endl;
+			Sleep(100);
+		}
+		else if (GetAsyncKeyState(VK_F7))
+		{
+
+			cap_method = JAC_CAP;
+			JACK.init(pointer);
+			std::cout << "Changed capture method to Jack Audio " << std::endl;
+			JACK.start();
 			Sleep(100);
 		}
 		else if (GetAsyncKeyState(VK_F12))
@@ -242,9 +251,17 @@ int main()
 		case D3D_CAP:
 			D3DCap.capture();
 			break;
+		case JAC_CAP:
+			Sleep(10);
+			//when audio is selected everything will be handled in a different thread
+			break;
 		}
-		Scherm.Bereken();
-		Scherm.Calc_Aspect_ratio();
+		if (cap_method != JAC_CAP)
+		{
+			Scherm.Bereken();
+			Scherm.Calc_Aspect_ratio();
+		}
+		
 		//wacht tot alle data verzonden is en we weer antwoord hebben gehad dat alles in orde is voordat we weer verder gaan
 		
 	}

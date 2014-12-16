@@ -13,6 +13,11 @@ class JackFFT
 public:
 	JackFFT();
 	~JackFFT();
+
+	void init(UINT8*);
+	void start();
+	void stop();
+
 	
 	UINT32 *pBits;
 
@@ -22,11 +27,13 @@ private:
 	/* FFT DATA */
 
 	void setup_plan();
+	void JackFFT::slowfall(float);
 
 	/* JACK data */
 	
 	jack_nframes_t nframes = 1024;
 	const size_t sample_size = sizeof(jack_default_audio_sample_t);
+
 
 	jack_client_t *client;
 };
