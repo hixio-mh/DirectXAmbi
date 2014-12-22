@@ -10,12 +10,16 @@ fftw_complex *output;
 fftw_plan plan;
 void slowfall(float nieuw);
 void calc_fft();
+void DrawTerminal();
 double resolution;
 float power[513];
 float oldPower[513];
 float maxPower[513];
 UINT8* pointer;
 UINT8 gamma[256] = { 0 };
+
+//thread comm
+int startTerminalDraw = 2;
 
 int process(jack_nframes_t nframes, void *arg)
 {
@@ -41,7 +45,6 @@ int process(jack_nframes_t nframes, void *arg)
 	static float blueMax = 0.1;
 	int i;
 
-	std::cout << power[1] << "\r";
 	/*
 	for (i = 1; i < 6; i++)
 	{
@@ -87,7 +90,7 @@ int process(jack_nframes_t nframes, void *arg)
 	}*/
 	
 
-	for (int i = 0; i < 439; i++)
+	for (int i = 0; i < 439; i+=3)
 	{
 		if (power[i] > maxPower[i])
 			maxPower[i] = power[i];
@@ -109,14 +112,60 @@ int process(jack_nframes_t nframes, void *arg)
 			temp = 255;
 		else if (temp < 0)
 			temp = 0;
-		*(pointer + 2 + (i * 3)) = gamma[temp];
+		*(pointer + (i * 3)) = gamma[temp];
 	}
 
+	
 	return 0;
 }
 
 
+void DrawTerminal()
+{
+	Sleep(1000);
+	std::cout << "thread gestart " << std::endl;
+	static HWND myconsole = GetConsoleWindow();
+	static HDC mydc = GetDC(myconsole);
+	static RECT myWindowRect;
+	GetWindowRect(myconsole, &myWindowRect);
 
+	static COLORREF WHITE = RGB(0, 0, 0);
+	static COLORREF BLUE = RGB(255, 255, 255);
+	while (startTerminalDraw !=0)
+	{
+		
+		for (int y = 0; y < 100; y++)
+		{
+			for (int x = 0; x < 513; x += 3)
+			{
+
+				SetPixel(mydc, x, y, WHITE);
+			}
+		}
+		while (startTerminalDraw == 1)
+		{
+			
+
+
+			for (int y = 0; y < 100; y++)
+			{
+				for (int x = 0; x < 100; x++)
+				{
+					if (y > power[x])
+					{
+						SetPixel(mydc, x, y, WHITE);
+					}
+					else
+						SetPixel(mydc, x, y, BLUE);
+
+				}
+			}
+			
+		}
+	}
+	ReleaseDC(myconsole, mydc);
+	std::cout << "thread sluit " << std::endl;
+}
 
 JackFFT::JackFFT()
 {
@@ -138,6 +187,7 @@ JackFFT::JackFFT()
 
 JackFFT::~JackFFT()
 {
+	startTerminalDraw = 0;
 }
 
 
@@ -148,6 +198,12 @@ void JackFFT::init(UINT8* tp)
 
 void JackFFT::start()
 {
+	if (startTerminalDraw != 1)
+	{
+		terminaldraw = new std::thread(DrawTerminal);
+	}
+	
+	
 	if (jack_activate(client)) {
 		fprintf(stderr, "cannot activate client");
 	}
@@ -157,6 +213,7 @@ void JackFFT::start()
 		*(pointer + (i * 3) + 1) = 0;
 		*(pointer + (i * 3) + 2) = 0;
 	}
+	startTerminalDraw = 1;
 }
 
 void JackFFT::stop()
@@ -164,6 +221,7 @@ void JackFFT::stop()
 	if (jack_deactivate(client)) {
 		fprintf(stderr, "cannot deactivate client");
 	}
+	startTerminalDraw = 2;
 }
 
 void JackFFT::setup_ports()

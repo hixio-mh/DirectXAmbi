@@ -5,6 +5,7 @@
 
 #include "fftw\fftw3.h"
 #include <iostream>
+#include <thread>
 
 typedef jack_default_audio_sample_t sample_t;
 
@@ -27,7 +28,7 @@ private:
 	/* FFT DATA */
 
 	void setup_plan();
-	void JackFFT::slowfall(float);
+	void slowfall(float);
 
 	/* JACK data */
 	
@@ -36,5 +37,6 @@ private:
 
 
 	jack_client_t *client;
+	std::thread *terminaldraw;
 };
 
