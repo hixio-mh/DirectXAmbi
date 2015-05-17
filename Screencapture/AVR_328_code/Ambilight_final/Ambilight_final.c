@@ -22,6 +22,8 @@ void CycleLeds();
 
 int main(void)
 {
+	DDRD |= (1<<PD2);
+	PORTD |= (1<<PD2);
 	//Schakel sowieso alle leds uit	
 	for(i=0;i<3*600;i++)
 	{
@@ -73,6 +75,8 @@ int main(void)
 		UDR0 = Led_count & 0x00FF;
 	#endif
 	
+	//Schakel de voeding aan
+	PORTD &= ~(1<<PD2);
 	
 	
 	if (Led_count > 1)

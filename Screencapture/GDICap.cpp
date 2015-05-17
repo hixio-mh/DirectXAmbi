@@ -12,6 +12,7 @@ GDICap::GDICap()
 	hCaptureBMP = CreateCompatibleBitmap(dcDesktop, screenInfo.right, screenInfo.bottom);
 	SelectObject(dcCapture, hCaptureBMP);
 	pBits = new UINT32[screenInfo.right*screenInfo.bottom];
+	SelectObject(dcCapture, hCaptureBMP);
 }
 
 

@@ -25,11 +25,11 @@ Direct3DCap::~Direct3DCap()
 	Surface->Release();
 	delete[] pBits;
 	pBits = nullptr;
-	
+
 }
 
 void Direct3DCap::init(UINT8 schermnummer)
-{		
+{
 	if (FAILED(Direct3D->GetAdapterDisplayMode(schermnummer, &ddm)))
 	{
 		std::cout << "Unable to Get Adapter Display Mode" << std::endl;
@@ -63,9 +63,9 @@ void Direct3DCap::init(UINT8 schermnummer)
 		NULL, D3DCREATE_MIXED_VERTEXPROCESSING, &PresParams,
 		&Direct3dDevice);
 
-//
+	//
 	Direct3dDevice->GetRenderTarget(0, &pRenderTarget);
-//
+	//
 
 	if (FAILED(Direct3dDevice->CreateOffscreenPlainSurface(ddm.Width, ddm.Height,
 		D3DFMT_A8R8G8B8, D3DPOOL_SYSTEMMEM,
@@ -75,7 +75,7 @@ void Direct3DCap::init(UINT8 schermnummer)
 	}
 	//maak een array aan waar het scherm in word opgeslagen
 	pBits = new UINT32[ddm.Width*ddm.Height];
-	
+
 }
 
 void Direct3DCap::capture()
@@ -86,29 +86,29 @@ void Direct3DCap::capture()
 	/*switch (Direct3dDevice->GetRenderTargetData(pRenderTarget, Surface))
 	{
 	case D3DERR_INVALIDCALL:
-		std::cout << "D3DERR_INVALIDCALL";
-		break;
+	std::cout << "D3DERR_INVALIDCALL";
+	break;
 	case D3DERR_DEVICELOST:
-		std::cout << "D3DERR_DEVICELOST";
-		break;
+	std::cout << "D3DERR_DEVICELOST";
+	break;
 	case D3DERR_DRIVERINTERNALERROR:
-		std::cout << "D3DERR_DRIVERINTERNALERROR";
-		break;
+	std::cout << "D3DERR_DRIVERINTERNALERROR";
+	break;
 	case D3D_OK:
-		std::cout << "D3D_OK";
-		break;
+	std::cout << "D3D_OK";
+	break;
 	default:
-		std::cout << "different error: " << (Direct3dDevice->GetRenderTargetData(pRenderTarget, Surface));
+	std::cout << "different error: " << (Direct3dDevice->GetRenderTargetData(pRenderTarget, Surface));
 	}
 	std::cout << std::endl;*/
-	
+
 
 	D3DLOCKED_RECT	lockedRect;
 	if (Surface->LockRect(&lockedRect, NULL, D3DLOCK_NO_DIRTY_UPDATE | D3DLOCK_NOSYSLOCK | D3DLOCK_READONLY) != D3D_OK)
 	{
 		std::cout << "D3D error" << std::endl;
 	}
-	
+
 	for (int i = 0; i < ddm.Height; i++)
 	{
 		memcpy((BYTE*)pBits + i * ddm.Width * BITSPERPIXEL / 8,

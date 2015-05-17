@@ -11,9 +11,35 @@
 #include "SerialClass.h"
 #include "GDICap.h"
 #include "Direct3DCap.h"
-#include "DX11Cap.h"
+#include "DXGI.h"
+#include <Windows.h>
+
 
 #pragma comment(lib, "Dwmapi.lib")
+
+/*
+int main()
+{
+	DXGI cap;
+	cap.init(0);
+	
+	clock_t klok2;
+	klok2 = 0;
+	int i = 0;
+	while (1)
+	{
+		std::cout << "                     " << "\r";
+		std::cout << "FPS: " << (clock() - klok2) << "\r";
+		i++;
+		//std::cout << "FPS: " << ((1 * CLOCKS_PER_SEC) / (clock() - klok2)) << "\r";
+		cap.capture();
+		klok2 = clock();
+		Sleep(100);
+	}
+	
+	Sleep(10000);
+}
+*/
 
 
 #define GDI_CAP 0
@@ -40,6 +66,8 @@ int main()
 
 	GDICap Cap;
 	Direct3DCap D3DCap;						//init directx9
+
+
 
 	std::ifstream myinfile;
 	myinfile.open("./Config.txt");
@@ -85,7 +113,8 @@ int main()
 
 	std::cout << "Using screen: " << Config[0] << " for capturing" << std::endl;
 	D3DCap.init(Config[0]);
-	Cap.init(Config[0]);							//
+	Cap.init(Config[0]);
+
 
 	UINT32 *pBits;
 	switch (cap_method)
@@ -138,7 +167,7 @@ int main()
 		return 0;
 	}
 
-	char Rx_buffer[100] = "";	//Dit is de Rx_buffer deze moet een char zijn
+	char Rx_buffer[100] = "12345678";	//Dit is de Rx_buffer deze moet een char zijn
 
 	//je kan hier op escape drukken om het programma af ste sluiten hier
 	std::cout << "Waiting for Arduino. Press ESC to quit" << std::endl;
@@ -241,7 +270,7 @@ int main()
 			break;
 		}
 		Scherm.Bereken();
-		Scherm.Calc_Aspect_ratio();
+		//Scherm.Calc_Aspect_ratio();
 		//wacht tot alle data verzonden is en we weer antwoord hebben gehad dat alles in orde is voordat we weer verder gaan
 		
 	}
