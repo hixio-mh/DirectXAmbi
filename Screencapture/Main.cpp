@@ -10,36 +10,11 @@
 #include "ScreenCalc.h"
 #include "SerialClass.h"
 #include "GDICap.h"
-#include "Direct3DCap.h"
 #include "DXGI.h"
-#include <Windows.h>
+
 
 
 #pragma comment(lib, "Dwmapi.lib")
-
-/*
-int main()
-{
-	DXGI cap;
-	cap.init(0);
-	
-	clock_t klok2;
-	klok2 = 0;
-	int i = 0;
-	while (1)
-	{
-		std::cout << "                     " << "\r";
-		std::cout << "FPS: " << (clock() - klok2) << "\r";
-		i++;
-		//std::cout << "FPS: " << ((1 * CLOCKS_PER_SEC) / (clock() - klok2)) << "\r";
-		cap.capture();
-		klok2 = clock();
-		Sleep(100);
-	}
-	
-	Sleep(10000);
-}
-*/
 
 
 #define GDI_CAP 0
@@ -48,26 +23,36 @@ int main()
 
 void CreateConfig(std::ofstream &file, Direct3DCap &cap);
 int *LedAmountTest(char *);
-void send_data(Serial* , char * , ScreenCalc &, UINT8 *);
+void send_data(Serial* , char * , ScreenCalc &);
 void calc(ScreenCalc &);
 BOOL DisableAeroTheme();
 
 UINT8 Thread_comm = 0x01;
 
+void hello()
+{
+	std::cout << "hello world" << std::endl;
+}
+
 
 int main()
 {
+
+
 	std::cout << "Aero will be disabled for performance reason!" << std::endl;
 	DisableAeroTheme();
 
 	bool exit = false;						//dit is voor later een escape variable
-	int cap_method = GDI_CAP;
+	int cap_method = D11_CAP;
 	float gamma = 0.6;
 
 	GDICap Cap;
 	Direct3DCap D3DCap;						//init directx9
+	DXGI DX11;
 
+	std::thread thread1(hello);
 
+	thread1.join();
 
 	std::ifstream myinfile;
 	myinfile.open("./Config.txt");
@@ -114,6 +99,7 @@ int main()
 	std::cout << "Using screen: " << Config[0] << " for capturing" << std::endl;
 	D3DCap.init(Config[0]);
 	Cap.init(Config[0]);
+	DX11.init(Config[0]);
 
 
 	UINT32 *pBits;
@@ -124,6 +110,9 @@ int main()
 		break;
 	case D3D_CAP:
 		pBits = D3DCap.pBits;
+		break;
+	case D11_CAP:
+		pBits = DX11.pBits;
 		break;
 	}
 
@@ -205,22 +194,29 @@ int main()
 
 	std::cout << "Press END to quit capturing" << std::endl;
 
-	UINT8 *pointer;						//Pointer voor de led bitstream
-	clock_t klok1;
-	clock_t klok2 = 50;
+	UINT8 *pointer=NULL;						//Pointer voor de led bitstream
+
 	pointer = Scherm.GeefLedPointer();	//Koppel de led bitstream aan de pointer
 	// maak een thread die nu nog niks doet
-	std::thread uart(send_data,SP,Rx_buffer,Scherm,pointer);
+	std::thread *uart;
+	uart = new std::thread(send_data,SP,Rx_buffer,Scherm);
 
 	while (exit == false)
 	{
-		std::cout << "                     " << "\r";
-		std::cout << "FPS: " << ((1 * CLOCKS_PER_SEC) / (clock() - klok2)) << "\r";
-		klok2 = clock();
+		
 
 		if (GetAsyncKeyState(VK_END))						//Als escape is ingedrukt zet exit true
 		{
 			exit = true;
+		}
+		else if (GetAsyncKeyState(VK_F7))
+		{
+			pBits = DX11.pBits;
+			Scherm.set_data(pBits);
+			cap_method = D11_CAP;
+			std::cout << "Changed capture method to DXGI " << std::endl;
+			Sleep(100);
+
 		}
 		else if (GetAsyncKeyState(VK_F8))
 		{
@@ -268,34 +264,42 @@ int main()
 		case D3D_CAP:
 			D3DCap.capture();
 			break;
+		case D11_CAP:
+			DX11.capture();
+			break;
 		}
 		Scherm.Bereken();
+		//send_data(SP, Rx_buffer, Scherm);
 		//Scherm.Calc_Aspect_ratio();
 		//wacht tot alle data verzonden is en we weer antwoord hebben gehad dat alles in orde is voordat we weer verder gaan
 		
 	}
 	Thread_comm = 0;
-	uart.join();
+
+	uart->join();
+
 	return 0;
 }
 
+
 // Dit moet in een andere thread gebeuren
-void send_data(Serial* SP, char * Rx_buffer, ScreenCalc &Scherm, UINT8 *pointer)
+void send_data(Serial* SP, char * Rx_buffer, ScreenCalc &Scherm)
 {
-	clock_t klok1;
+	clock_t klok23;
 	while (Thread_comm == 0x01)
 	{
-			SP->WriteData((char*)pointer, Scherm.geefLeds() * 3);	//Stuur alle data weg
+		SP->WriteData((char*)Scherm.GeefLedPointer(), Scherm.geefLeds() * 3);	//Stuur alle data weg
 
-			klok1 = clock();
+			klok23 = clock();
 			SP->ReadData(Rx_buffer, 10);
-			while (Rx_buffer[0] != '1' || ((clock() - klok1) / CLOCKS_PER_SEC) > (float)0.5)		//Wacht tot arduino weer klaar is
+			while (Rx_buffer[0] != '1' || ((clock() - klok23) / CLOCKS_PER_SEC) > (float)0.5)		//Wacht tot arduino weer klaar is
 			{
 				SP->ReadData(Rx_buffer, 100);
 			}
 			Rx_buffer[0] = '0';
 	}
 }
+
 
 void CreateConfig(std::ofstream &file, Direct3DCap &cap)
 {
