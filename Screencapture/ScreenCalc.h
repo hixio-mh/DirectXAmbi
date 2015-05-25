@@ -2,6 +2,7 @@
 
 #include <Windows.h>
 #include <math.h>
+#include <vector>
 #include <thread>
 
 typedef struct Grid {
