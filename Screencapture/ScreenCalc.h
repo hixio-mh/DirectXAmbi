@@ -2,6 +2,7 @@
 
 #include <Windows.h>
 #include <math.h>
+#include <thread>
 
 typedef struct Grid {
 	int TLX = 0;

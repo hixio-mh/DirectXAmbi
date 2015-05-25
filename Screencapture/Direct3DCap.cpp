@@ -21,8 +21,14 @@ Direct3DCap::Direct3DCap() :scherm_nummer(0)
 
 Direct3DCap::~Direct3DCap()
 {
-	Surface->UnlockRect();
-	Surface->Release();
+	if (Surface != 0)
+	{
+
+		Surface->UnlockRect();
+		Surface->Release();
+	}
+	Direct3D->Release();
+	Direct3D = nullptr;
 	delete[] pBits;
 	pBits = nullptr;
 

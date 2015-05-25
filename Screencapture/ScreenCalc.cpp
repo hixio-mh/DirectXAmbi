@@ -5,7 +5,7 @@ ScreenCalc::ScreenCalc(float Diago, UINT32 *DataSet, int hres, int vres, int Blo
 						int BlockH, int boven, int onder, int links, int rechts, int Black) 
 :Hres(hres), Vres(vres), LedData(NULL), BlockDepthHori(BlockH), BlockDepthVert(BlockV), Blok(NULL), 
 LedsBoven(boven), LedsOnder(onder), LedsLinks(links), LedsRechts(rechts), BlackLevel(Black), 
-GammaE(NULL), OldLedData(NULL), K_P(0.2)
+GammaE(NULL), OldLedData(NULL), K_P(0.5)
 {
 	double verhouding;
 	verhouding = (double)Hres / (double)Vres;
@@ -143,6 +143,7 @@ void ScreenCalc::Gemiddelde(UINT8 *Led, int TopLeftX, int TopLeftY, int BottomRi
 	{
 		for (y = TopLeftY; y < BottomRightY; y++)
 		{
+			
 			//Als het bijna puur zwart is sla je hem over bij gemiddelde berekening
 			//std::cout << (unsigned int)(((PixelData[x + y*Hres] >> 0) & 0xFF)) << '/' << j << std::endl;
 			if ((((PixelData[x + y*Hres] >> 0) & 0xFF) < BlackLevel) && (((PixelData[x + y*Hres] >> 8) & 0xFF) < BlackLevel) && (((PixelData[x + y*Hres] >> 16) & 0xFF) < BlackLevel))
@@ -158,15 +159,39 @@ void ScreenCalc::Gemiddelde(UINT8 *Led, int TopLeftX, int TopLeftY, int BottomRi
 				j++;
 				
 			}
+
+			b += ((PixelData[x + y*Hres] >> 0) & 0xFF);
+			g += ((PixelData[x + y*Hres] >> 8) & 0xFF);
+			r += ((PixelData[x + y*Hres] >> 16) & 0xFF);
+			j++;
 			
 		}
 	}
+
+
+
 	if (j == 0)
 		j = 1;
-
+	/*
 	Led[0] = GammaE[(g / j)];
 	Led[1] = GammaE[(r / j)];
 	Led[2] = GammaE[(b / j)];
+	*/
+
+	if (g < BlackLevel)
+		Led[0] = 0;
+	else
+		Led[0] = GammaE[(g / j)];
+
+	if (r < BlackLevel)
+		Led[1] = 0;
+	else
+		Led[1] = GammaE[(r / j)];
+
+	if (b < BlackLevel)
+		Led[2] = 0;
+	else
+		Led[2] = GammaE[(b / j)];
 	
 }
 

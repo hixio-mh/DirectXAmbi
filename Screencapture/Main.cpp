@@ -5,6 +5,7 @@
 #include <thread>
 #include <windows.h>
 #include <Dwmapi.h>
+#include <VersionHelpers.h>
 
 #include "Direct3DCap.h"
 #include "ScreenCalc.h"
@@ -21,6 +22,10 @@
 #define D3D_CAP 1
 #define D11_CAP 2
 
+#define Windows8 0
+#define Windows7 1
+
+
 void CreateConfig(std::ofstream &file, Direct3DCap &cap);
 int *LedAmountTest(char *);
 void send_data(Serial* , char * , ScreenCalc &);
@@ -29,30 +34,42 @@ BOOL DisableAeroTheme();
 
 UINT8 Thread_comm = 0x01;
 
-void hello()
-{
-	std::cout << "hello world" << std::endl;
-}
-
 
 int main()
 {
-
-
-	std::cout << "Aero will be disabled for performance reason!" << std::endl;
-	DisableAeroTheme();
-
 	bool exit = false;						//dit is voor later een escape variable
-	int cap_method = D11_CAP;
+	
 	float gamma = 0.6;
+	//define
+	Direct3DCap *DX9;
+	GDICap *GDI;
+	DXGI *DX11;
 
-	GDICap Cap;
-	Direct3DCap D3DCap;						//init directx9
-	DXGI DX11;
+	//post welke schermen beschikbaar zijn
+	DX9 = new Direct3DCap;
 
-	std::thread thread1(hello);
 
-	thread1.join();
+	int cap_method = D11_CAP;
+	int OS = 0;
+	if (IsWindows8OrGreater())
+	{
+		std::cout << "Windows 8 detected. For optimal performance use DX11" << std::endl;
+		OS = Windows8;
+		cap_method = D11_CAP;
+	}
+	else if (IsWindows7OrGreater())
+	{
+		std::cout << "Windows 7 detected." << std::endl;
+		std::cout << "Aero will be disabled for performance reason!" << std::endl;
+		DisableAeroTheme();
+		OS = Windows7;
+		cap_method = D11_CAP;
+	}
+	else
+	{
+		std::cout << "Unsopperted windows version detected closing software" << std::endl;
+		return 0;
+	}
 
 	std::ifstream myinfile;
 	myinfile.open("./Config.txt");
@@ -65,12 +82,13 @@ int main()
 		std::ofstream myfile;
 		myfile.open("./Config.txt");
 
-		CreateConfig(myfile, D3DCap);
+		CreateConfig(myfile, *DX9);
 
 		myfile.close();
 
 		myinfile.open("./Config.txt");
 	}
+
 
 	std::string STRING;
 	int Config[9] = { -1 };
@@ -97,36 +115,44 @@ int main()
 	}
 
 	std::cout << "Using screen: " << Config[0] << " for capturing" << std::endl;
-	D3DCap.init(Config[0]);
-	Cap.init(Config[0]);
-	DX11.init(Config[0]);
 
 
 	UINT32 *pBits;
 	switch (cap_method)
 	{
 	case GDI_CAP:
-		pBits = Cap.pBits;
+		GDI = new GDICap;
+		GDI->init(Config[0]);
+		pBits = GDI->pBits;
 		break;
 	case D3D_CAP:
-		pBits = D3DCap.pBits;
+		DX9 = new Direct3DCap;
+		DX9->init(Config[0]);
+		pBits = DX9->pBits;
 		break;
 	case D11_CAP:
-		pBits = DX11.pBits;
+		DX11 = new DXGI;
+		DX11->init(Config[0]);
+		pBits = DX11->pBits;
 		break;
 	}
 
 	ScreenCalc Scherm(105,					//init de kleur bereken functies
 		pBits,			//De PixelData
-		D3DCap.return_hres(),	//De Hori Resolutie 
-		D3DCap.return_vres(),	//De Verti Resolutie
+		DX9->return_hres(),	//De Hori Resolutie 
+		DX9->return_vres(),	//De Verti Resolutie
 		Config[1],					//Hoeveel procent die moet nemen aan de bovenkant/onderkant
 		Config[2],					//Hoeveel procent die aan de zijkant moet nemen
 		Config[3],				//Leds Boven
 		Config[5],					//Leds Onder
 		Config[4],					//Leds Links
 		Config[6],				//Leds Rechts
-		Config[7]);
+		Config[7]
+		);
+
+	//deze is nu niet meer nodig
+	delete DX9;
+	DX9 = nullptr;
 
 	Scherm.Bereken_Grid();					//stel de hoeveelheid leds in die worden gebruikt en bereken Grid Grootte
 
@@ -204,33 +230,24 @@ int main()
 	while (exit == false)
 	{
 		
-
 		if (GetAsyncKeyState(VK_END))						//Als escape is ingedrukt zet exit true
 		{
 			exit = true;
 		}
-		else if (GetAsyncKeyState(VK_F7))
+		else if (GetAsyncKeyState(VK_F8)&OS==Windows7)
 		{
-			pBits = DX11.pBits;
-			Scherm.set_data(pBits);
-			cap_method = D11_CAP;
-			std::cout << "Changed capture method to DXGI " << std::endl;
-			Sleep(100);
-
-		}
-		else if (GetAsyncKeyState(VK_F8))
-		{
-			pBits = Cap.pBits;
+			delete DX9;
+			pBits = GDI->pBits;
 			Scherm.set_data(pBits);
 			cap_method = GDI_CAP;
 			std::cout << "Changed capture method to GDI " << std::endl;
 			Sleep(100);
 
 		}
-		else if (GetAsyncKeyState(VK_F9))
+		else if (GetAsyncKeyState(VK_F9)&OS == Windows7)
 		{
-
-			pBits = D3DCap.pBits;
+			delete GDI;
+			pBits = DX9->pBits;
 			Scherm.set_data(pBits);
 			cap_method = D3D_CAP;
 			std::cout << "Changed capture method to D3D " << std::endl;
@@ -254,18 +271,18 @@ int main()
 
 		//start een thread die de data stuurt
 
-//Scherm.Calc_Aspect_ratio();
+		Scherm.Calc_Aspect_ratio();
 		//Maak screenshot en sla die op
 		switch (cap_method)
 		{
 		case GDI_CAP:
-			Cap.capture();
+			GDI->capture();
 			break;
 		case D3D_CAP:
-			D3DCap.capture();
+			DX9->capture();
 			break;
 		case D11_CAP:
-			DX11.capture();
+			DX11->capture();
 			break;
 		}
 		Scherm.Bereken();

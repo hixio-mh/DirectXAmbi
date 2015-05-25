@@ -20,6 +20,8 @@ GDICap::~GDICap()
 {
 	DeleteDC(dcCapture);
 	DeleteObject(hCaptureBMP);
+	delete[] pBits;
+	pBits = nullptr;
 }
 
 void GDICap::init(UINT8 SCherm)
