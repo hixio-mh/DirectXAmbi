@@ -155,7 +155,7 @@ bool DXGI::GetFrame()
 		
 		if (hr == 0x887A0027)
 		{
-			std::cout << "Time out" << std::endl;
+			std::cout << "Nothing changed \r";
 		}
 		else
 		{

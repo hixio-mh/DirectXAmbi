@@ -17,6 +17,7 @@ GammaE(NULL), OldLedData(NULL), K_P(0.5)
 	ZeroMemory(OldLedData, LedAantal * 3);
 	GammaE = new int[256] {0};
 	Offset = new int[8] {0};
+	set_Brightness(BlackLevel);
 }
 
 ScreenCalc::~ScreenCalc()
@@ -159,7 +160,7 @@ void ScreenCalc::Gemiddelde(UINT8 *Led, int TopLeftX, int TopLeftY, int BottomRi
 	if (TopLeftY < vborder)
 	{
 		//bereken het verschil
-		y = hborder - TopLeftY;
+		y = vborder - TopLeftY;
 		TopLeftY = vborder;
 		BottomRightY += y;
 	}
@@ -228,7 +229,6 @@ void ScreenCalc::set_Brightness(int bri)
 		brightness = BlackLevel;
 	else
 		brightness = bri;
-	std::cout << brightness << std::endl;
 }
 
 
@@ -266,7 +266,36 @@ void ScreenCalc::SetOffset(int *offset)
 	}
 }
 
+void ScreenCalc::SethOffset(int offset)
+{
+
+		hOffset = offset;
+
+}
+
+void ScreenCalc::SetvOffset(int offset)
+{
+
+		vOffset = offset;
+
+}
+
 int ScreenCalc::Calc_Aspect_ratio()
+{
+	Calc_Top_border();
+	Calc_Side_border();
+	if (hborder < hOffset)
+	{
+		hborder = hOffset;
+	}
+	if (vborder < vOffset)
+	{
+		vborder = vOffset;
+	}
+	return 0;
+}
+
+void ScreenCalc::Calc_Side_border()
 {
 	//Deze functie berekend of de afgespeelde video het scherm vult of niet.
 	//en returned de breedte van de eventuele zwarte balk
@@ -304,11 +333,6 @@ int ScreenCalc::Calc_Aspect_ratio()
 	{
 		hborder = xmax;
 	}
-
-//	std::cout << "\t\t\t\t\r";
-//	std::cout << "Hborder is: " << hborder << std::endl;
-	Calc_Top_border();
-	return hborder;
 }
 
 void ScreenCalc::Calc_Top_border()
@@ -352,7 +376,4 @@ void ScreenCalc::Calc_Top_border()
 	}
 	else if (nX == 1)
 		vborder = 0;
-
-//		std::cout << "\t\t\t\t\r";
-//		std::cout << "Vborder is: " << vborder << "HBorder is: " << hborder;
 }

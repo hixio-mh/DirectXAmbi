@@ -152,6 +152,7 @@ int main()
 		Config[7]
 		);
 
+
 	//deze is nu niet meer nodig
 	delete DX9;
 	DX9 = nullptr;
@@ -228,6 +229,7 @@ int main()
 	// maak een thread die nu nog niks doet
 	std::thread *uart;
 	uart = new std::thread(send_data,SP,Rx_buffer,Scherm,&mtx);
+
 	int bright = 0;
 	while (exit == false)
 	{
@@ -284,28 +286,34 @@ int main()
 		//start een thread die de data stuurt
 
 		//Maak screenshot en sla die op
-		mtx.lock();
+		
 		switch (cap_method)
 		{
 		case GDI_CAP:
 			GDI->capture();
+			mtx.lock();
 			Scherm.Bereken();
+			mtx.unlock();
 			Scherm.Calc_Aspect_ratio();
 			break;
 		case D3D_CAP:
 			DX9->capture();
+			mtx.lock();
 			Scherm.Bereken();
+			mtx.unlock();
 			Scherm.Calc_Aspect_ratio();
 			break;
 		case D11_CAP:
 			if (DX11->capture())
 			{
+				mtx.lock();
 				Scherm.Bereken();
+				mtx.unlock();
 				Scherm.Calc_Aspect_ratio();
 			}
 			break;
 		}
-		mtx.unlock();
+		
 		
 		//send_data(SP, Rx_buffer, Scherm);
 		//Scherm.Calc_Aspect_ratio();

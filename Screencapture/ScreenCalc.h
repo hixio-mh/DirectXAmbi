@@ -25,6 +25,8 @@ public:
 	void Bereken();
 
 	void SetOffset(int *Offset);
+	void SetvOffset(int Offset);
+	void SethOffset(int Offset);
 	void set_data(UINT32 *dataset);
 
 	int Calc_Aspect_ratio();
@@ -53,7 +55,9 @@ private:
 	int BlackLevel;
 	int hborder = 0;
 	int vborder = 0;
-	int brightness=0;
+	int hOffset = 0;
+	int	vOffset = 0;
+	int brightness;
 	UINT16 LedAantal;
 
 	UINT32 *PixelData;
