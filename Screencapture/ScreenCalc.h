@@ -21,6 +21,7 @@ public:
 	void Bereken_Grid();
 	
 	void set_Gamma(float Gamma);
+	void set_Brightness(int Brightness);
 	void Bereken();
 
 	void SetOffset(int *Offset);
@@ -52,7 +53,7 @@ private:
 	int BlackLevel;
 	int hborder = 0;
 	int vborder = 0;
-
+	int brightness=0;
 	UINT16 LedAantal;
 
 	UINT32 *PixelData;

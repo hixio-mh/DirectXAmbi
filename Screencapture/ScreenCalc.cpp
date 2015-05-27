@@ -199,22 +199,38 @@ void ScreenCalc::Gemiddelde(UINT8 *Led, int TopLeftX, int TopLeftY, int BottomRi
 	if (j == 0)
 		j = 1;
 
+	g = g/ j;
+	b = b/ j;
+	r = r/j;
+
 	if (g < BlackLevel)
 		Led[0] = 0;
-	else
-		Led[0] = GammaE[(g / j)];
+	else	
+		Led[0] = GammaE[g - brightness];
+		
 
 	if (r < BlackLevel)
 		Led[1] = 0;
 	else
-		Led[1] = GammaE[(r / j)];
+		Led[1] = GammaE[r-brightness];
 
 	if (b < BlackLevel)
 		Led[2] = 0;
 	else
-		Led[2] = GammaE[(b / j)];
+		Led[2] = GammaE[b- brightness];
 	
 }
+void ScreenCalc::set_Brightness(int bri)
+{
+	if (bri < 0)
+		bri = 0;
+	else if (bri > BlackLevel)
+		brightness = BlackLevel;
+	else
+		brightness = bri;
+	std::cout << brightness << std::endl;
+}
+
 
 UINT16 ScreenCalc::geefLeds()
 {

@@ -228,7 +228,7 @@ int main()
 	// maak een thread die nu nog niks doet
 	std::thread *uart;
 	uart = new std::thread(send_data,SP,Rx_buffer,Scherm,&mtx);
-
+	int bright = 0;
 	while (exit == false)
 	{
 		
@@ -259,6 +259,16 @@ int main()
 		{
 			gamma += 0.01;
 			Scherm.set_Gamma(gamma);
+		}
+		else if (GetAsyncKeyState(VK_F6))
+		{
+			bright -= 1;
+			Scherm.set_Brightness(bright);
+		}
+		else if (GetAsyncKeyState(VK_F7))
+		{
+			bright += 1;
+			Scherm.set_Brightness(bright);
 		}
 		else if (GetAsyncKeyState(VK_F11))
 		{
