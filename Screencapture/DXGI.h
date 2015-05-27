@@ -21,14 +21,14 @@ public:
 	~DXGI();
 	void init(UINT IntNumber);
 	
-	void capture();
+	bool capture();
 	
 
 	UINT32	*pBits = NULL;
 
 private:
 
-	void GetFrame();
+	bool GetFrame();
 	void initdup(UINT IntNumber);
 	void ReleaseFrame();
 

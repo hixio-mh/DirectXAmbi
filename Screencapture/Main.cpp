@@ -6,6 +6,7 @@
 #include <windows.h>
 #include <Dwmapi.h>
 #include <VersionHelpers.h>
+#include <mutex>
 
 #include "Direct3DCap.h"
 #include "ScreenCalc.h"
@@ -28,7 +29,7 @@
 
 void CreateConfig(std::ofstream &file, Direct3DCap &cap);
 int *LedAmountTest(char *);
-void send_data(Serial* , char * , ScreenCalc &);
+void send_data(Serial* , char * , ScreenCalc &,std::mutex *);
 void calc(ScreenCalc &);
 BOOL DisableAeroTheme();
 
@@ -44,6 +45,7 @@ int main()
 	Direct3DCap *DX9;
 	GDICap *GDI;
 	DXGI *DX11;
+	std::mutex mtx;
 
 	//post welke schermen beschikbaar zijn
 	DX9 = new Direct3DCap;
@@ -225,7 +227,7 @@ int main()
 	pointer = Scherm.GeefLedPointer();	//Koppel de led bitstream aan de pointer
 	// maak een thread die nu nog niks doet
 	std::thread *uart;
-	uart = new std::thread(send_data,SP,Rx_buffer,Scherm);
+	uart = new std::thread(send_data,SP,Rx_buffer,Scherm,&mtx);
 
 	while (exit == false)
 	{
@@ -271,21 +273,30 @@ int main()
 
 		//start een thread die de data stuurt
 
-		Scherm.Calc_Aspect_ratio();
 		//Maak screenshot en sla die op
+		mtx.lock();
 		switch (cap_method)
 		{
 		case GDI_CAP:
 			GDI->capture();
+			Scherm.Bereken();
+			Scherm.Calc_Aspect_ratio();
 			break;
 		case D3D_CAP:
 			DX9->capture();
+			Scherm.Bereken();
+			Scherm.Calc_Aspect_ratio();
 			break;
 		case D11_CAP:
-			DX11->capture();
+			if (DX11->capture())
+			{
+				Scherm.Bereken();
+				Scherm.Calc_Aspect_ratio();
+			}
 			break;
 		}
-		Scherm.Bereken();
+		mtx.unlock();
+		
 		//send_data(SP, Rx_buffer, Scherm);
 		//Scherm.Calc_Aspect_ratio();
 		//wacht tot alle data verzonden is en we weer antwoord hebben gehad dat alles in orde is voordat we weer verder gaan
@@ -300,13 +311,14 @@ int main()
 
 
 // Dit moet in een andere thread gebeuren
-void send_data(Serial* SP, char * Rx_buffer, ScreenCalc &Scherm)
+void send_data(Serial* SP, char * Rx_buffer, ScreenCalc &Scherm, std::mutex *mtx)
 {
 	clock_t klok23;
 	while (Thread_comm == 0x01)
 	{
+		mtx->lock();
 		SP->WriteData((char*)Scherm.GeefLedPointer(), Scherm.geefLeds() * 3);	//Stuur alle data weg
-
+		mtx->unlock();
 			klok23 = clock();
 			SP->ReadData(Rx_buffer, 10);
 			while (Rx_buffer[0] != '1' || ((clock() - klok23) / CLOCKS_PER_SEC) > (float)0.5)		//Wacht tot arduino weer klaar is
@@ -314,6 +326,7 @@ void send_data(Serial* SP, char * Rx_buffer, ScreenCalc &Scherm)
 				SP->ReadData(Rx_buffer, 100);
 			}
 			Rx_buffer[0] = '0';
+
 	}
 }
 

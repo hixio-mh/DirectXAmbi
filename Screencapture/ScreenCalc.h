@@ -26,13 +26,17 @@ public:
 	void SetOffset(int *Offset);
 	void set_data(UINT32 *dataset);
 
-	float Calc_Aspect_ratio();
+	int Calc_Aspect_ratio();
+
 
 	UINT16 geefLeds();
 	UINT8 *GeefLedPointer();
 
 private:
 	void Gemiddelde(UINT8 *Led, int TopLeftX, int TopLeftY, int BottomLeftY, int BottomRightX);
+	void Calc_Top_border();
+	void Calc_Side_border();
+
 
 	float Hoogte;
 	float Lengte;
@@ -46,6 +50,8 @@ private:
 	int LedsLinks;
 	int LedsRechts;
 	int BlackLevel;
+	int hborder = 0;
+	int vborder = 0;
 
 	UINT16 LedAantal;
 

@@ -113,6 +113,7 @@ void ScreenCalc::Bereken()
 	for (int i = 0; i < LedAantal; i++)
 	{
 		//Dit zou nog in een aggressieve PID gedaan kunnen worden om een vloeiender effect te kunnen krijgen
+		
 		Gemiddelde(LedData + (i * 3), Blok[i].TLX, Blok[i].TLY, Blok[i].BRY, Blok[i].BRX);
 
 		deltaR = LedData[i * 3] - OldLedData[i * 3];
@@ -136,23 +137,52 @@ void ScreenCalc::Gemiddelde(UINT8 *Led, int TopLeftX, int TopLeftY, int BottomRi
 	int j = 0;
 	int r = 0, g = 0, b = 0;
 	int y, x;
-
 	
+	//zijkant correctie
+	if (TopLeftX < hborder)
+	{
+		//bereken het verschil
+		x = hborder - TopLeftX;
+		TopLeftX = hborder;
+		BottomRightX += x;
+	}
+	
+	if (Hres - hborder < BottomRightX)
+	{
+		//bereken het verschil
+		x = BottomRightX - (Hres - hborder);
+		BottomRightX = Hres - hborder;
+		TopLeftX -= x;
+	}
 
+	//bovenste rand correctie
+	if (TopLeftY < vborder)
+	{
+		//bereken het verschil
+		y = hborder - TopLeftY;
+		TopLeftY = vborder;
+		BottomRightY += y;
+	}
+
+	if (Vres - vborder < BottomRightY)
+	{
+		//bereken het verschil
+		y = BottomRightY - (Vres - vborder);
+		BottomRightY = Vres - vborder;
+		TopLeftY -= y;
+	}
+	
 	for (x = TopLeftX; x < BottomRightX; x++)
 	{
 		for (y = TopLeftY; y < BottomRightY; y++)
 		{
-			
 			//Als het bijna puur zwart is sla je hem over bij gemiddelde berekening
-			//std::cout << (unsigned int)(((PixelData[x + y*Hres] >> 0) & 0xFF)) << '/' << j << std::endl;
 			if ((((PixelData[x + y*Hres] >> 0) & 0xFF) < BlackLevel) && (((PixelData[x + y*Hres] >> 8) & 0xFF) < BlackLevel) && (((PixelData[x + y*Hres] >> 16) & 0xFF) < BlackLevel))
 			{
 			}
 			else
 			{
-				//std::cout << (PixelData[x + y*Hres]&0x000000FF) << ',' << ((PixelData[x + y*Hres] >> 0) & 0xFF) << std::endl;
-				//Sleep(100);
+
 				b += ((PixelData[x + y*Hres] >> 0) & 0xFF);
 				g += ((PixelData[x + y*Hres] >> 8) & 0xFF);
 				r += ((PixelData[x + y*Hres] >> 16) & 0xFF);
@@ -160,10 +190,6 @@ void ScreenCalc::Gemiddelde(UINT8 *Led, int TopLeftX, int TopLeftY, int BottomRi
 				
 			}
 
-			b += ((PixelData[x + y*Hres] >> 0) & 0xFF);
-			g += ((PixelData[x + y*Hres] >> 8) & 0xFF);
-			r += ((PixelData[x + y*Hres] >> 16) & 0xFF);
-			j++;
 			
 		}
 	}
@@ -172,11 +198,6 @@ void ScreenCalc::Gemiddelde(UINT8 *Led, int TopLeftX, int TopLeftY, int BottomRi
 
 	if (j == 0)
 		j = 1;
-	/*
-	Led[0] = GammaE[(g / j)];
-	Led[1] = GammaE[(r / j)];
-	Led[2] = GammaE[(b / j)];
-	*/
 
 	if (g < BlackLevel)
 		Led[0] = 0;
@@ -229,23 +250,93 @@ void ScreenCalc::SetOffset(int *offset)
 	}
 }
 
-float ScreenCalc::Calc_Aspect_ratio()
+int ScreenCalc::Calc_Aspect_ratio()
 {
 	//Deze functie berekend of de afgespeelde video het scherm vult of niet.
-	//Op het moment zoekt die een zwarte balk.
-	//Deze methode werkt niet helemaal goed. als er zwart beeld is zal die alles zien als niks
-	int i = 0;
-	int j = 0;
-	while ((((PixelData[(j*Hres) + i] >> 16) & 0xFF) < 0x01) && (((PixelData[(j*Hres) + i] >> 8) & 0xFF) < 0x01) && (((PixelData[(j*Hres) + i]) & 0xFF) < 0x01))
+	//en returned de breedte van de eventuele zwarte balk
+	//Eerst word het contrast extreem opgeschroefd zodat alleen de pixels met de waarde 0 niet veranderen.
+	//daarna zoekt deze een zwarte balk
+	//deze functie werkt alleen als de video player niet pixelwaarde 0,0,0 als zwart gebruikt
+	int x = 0, y = 0;
+	int xmax = 0;
+	int nY = 0;
+	while (y < Vres)
 	{
-		if (i > Vres)
+		while ((((PixelData[(y * Hres) + x] >> 16) & 0xFF) * 256 == 0)&(((PixelData[(y * Hres) + x] >> 8) & 0xFF) * 256 == 0)&(((PixelData[(y * Hres) + x] >> 0) & 0xFF) * 256 == 0))
 		{
-			j++;
-			i = 0;
+			x++;
+			if (x == Hres)
+			{
+				y++;
+				x = 0;
+			}
 		}
-		else
-			i++;
+		y++;
+		if (xmax < x)
+		{
+			nY = 1;
+			xmax = x;
+		}
+		else if (xmax == x)
+			nY++;
 	}
-	std::cout << "\t\t vertical offset: " << j;
-	return 0;
+	
+
+	
+	
+	if (nY == Vres)
+	{
+		hborder = xmax;
+	}
+
+//	std::cout << "\t\t\t\t\r";
+//	std::cout << "Hborder is: " << hborder << std::endl;
+	Calc_Top_border();
+	return hborder;
+}
+
+void ScreenCalc::Calc_Top_border()
+{
+	//Deze functie berekend of de afgespeelde video het scherm vult of niet.
+	//en returned de breedte van de eventuele zwarte balk
+	//Eerst word het contrast extreem opgeschroefd zodat alleen de pixels met de waarde 0 niet veranderen.
+	//daarna zoekt deze een zwarte balk
+	//deze functie werkt alleen als de video player niet pixelwaarde 0,0,0 als zwart gebruikt
+	int x = 0, y = 0;
+	int ymax = 0;
+	int nX = 0;
+	while (x < Hres)
+	{
+		while ((((PixelData[(y * Hres) + x] >> 16) & 0xFF) * 256 == 0)&(((PixelData[(y * Hres) + x] >> 8) & 0xFF) * 256 == 0)&(((PixelData[(y * Hres) + x] >> 0) & 0xFF) * 256 == 0))
+		{
+			y++;
+			if (y == Vres)
+			{
+				x++;
+				y = 0;
+			}
+		}
+		x++;
+		if (ymax < y)
+		{
+			nX = 1;
+			ymax = y;
+		}
+		else if (ymax == y)
+			nX++;
+		y = 0;
+	}
+
+
+
+
+	if (nX == Hres)
+	{
+		vborder = ymax;
+	}
+	else if (nX == 1)
+		vborder = 0;
+
+//		std::cout << "\t\t\t\t\r";
+//		std::cout << "Vborder is: " << vborder << "HBorder is: " << hborder;
 }

@@ -87,42 +87,49 @@ void DXGI::initdup(UINT IntNumber)
 }
 
 
-void DXGI::capture()
+bool DXGI::capture()
 {
 
 	ReleaseFrame();
 
 	
 	
-	GetFrame();
-	
-	
-	if (!CPUTexture)
+	if (GetFrame())
 	{
-		AcquiredDesktopImage->GetDesc(&textDesc);
-		textDesc.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
-		textDesc.Usage = D3D11_USAGE_STAGING;
-		textDesc.BindFlags = 0;
-		textDesc.MiscFlags = 0;
-		dev->CreateTexture2D(&textDesc, NULL, &CPUTexture);
+		if (!CPUTexture)
+		{
+			AcquiredDesktopImage->GetDesc(&textDesc);
+			textDesc.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
+			textDesc.Usage = D3D11_USAGE_STAGING;
+			textDesc.BindFlags = 0;
+			textDesc.MiscFlags = 0;
+			dev->CreateTexture2D(&textDesc, NULL, &CPUTexture);
+		}
+
+
+		devcon->CopyResource(CPUTexture, AcquiredDesktopImage);
+
+		devcon->Map(CPUTexture, 0, D3D11_MAP_READ, NULL, &pMappedData);
+
+		BYTE* mappedData = reinterpret_cast<BYTE*>(pMappedData.pData);
+
+#define BITSPERPIXEL 32
+
+		for (int i = 0; i < textDesc.Height; i++)
+		{
+			memcpy((BYTE*)pBits + i * textDesc.Width * BITSPERPIXEL / 8,
+				mappedData + i* pMappedData.RowPitch,
+				textDesc.Width * BITSPERPIXEL / 8);
+		}
+
 	}
+	else
+		return false;
+
+	return true;
 	
-
-	devcon->CopyResource(CPUTexture, AcquiredDesktopImage);
-
-	devcon->Map(CPUTexture, 0, D3D11_MAP_READ, NULL, &pMappedData);
-
-	BYTE* mappedData = reinterpret_cast<BYTE*>(pMappedData.pData);
-
-	#define BITSPERPIXEL 32
-
-	for (int i = 0; i < textDesc.Height; i++)
-	{
-		memcpy((BYTE*)pBits + i * textDesc.Width * BITSPERPIXEL / 8,
-			mappedData + i* pMappedData.RowPitch,
-			textDesc.Width * BITSPERPIXEL / 8);
-	}
-
+	
+	
 }
 
 void DXGI::ReleaseFrame()
@@ -136,7 +143,7 @@ void DXGI::ReleaseFrame()
 	}
 }
 
-void DXGI::GetFrame()
+bool DXGI::GetFrame()
 {
 	IDXGIResource* DesktopResource = nullptr;
 	DXGI_OUTDUPL_FRAME_INFO FrameInfo;
@@ -154,7 +161,7 @@ void DXGI::GetFrame()
 		{
 			std::cout << "acquire frame failed with" << std::hex << hr << std::endl;
 		}
-		return;
+		return false;
 	}
 
 	if (AcquiredDesktopImage)
@@ -168,4 +175,5 @@ void DXGI::GetFrame()
 	DesktopResource->QueryInterface(__uuidof(ID3D11Texture2D), reinterpret_cast<void **>(&AcquiredDesktopImage));
 	DesktopResource->Release();
 	DesktopResource = nullptr;
+	return true;
 }
