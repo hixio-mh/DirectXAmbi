@@ -69,7 +69,7 @@ int main()
 	}
 	else
 	{
-		std::cout << "Unsopperted windows version detected closing software" << std::endl;
+		std::cout << "Unsupported windows version detected closing software" << std::endl;
 		return 0;
 	}
 
@@ -127,17 +127,19 @@ int main()
 		GDI->init(Config[0]);
 		pBits = GDI->pBits;
 		break;
-	case D3D_CAP:
-		DX9 = new Direct3DCap;
-		DX9->init(Config[0]);
-		pBits = DX9->pBits;
-		break;
+	
 	case D11_CAP:
 		DX11 = new DXGI;
 		DX11->init(Config[0]);
 		pBits = DX11->pBits;
 		break;
 	}
+	DX9->init(Config[0]);
+	if (cap_method == D3D_CAP)
+	{
+		pBits = DX9->pBits;
+	}
+	
 
 	ScreenCalc Scherm(105,					//init de kleur bereken functies
 		pBits,			//De PixelData
@@ -156,6 +158,8 @@ int main()
 	//deze is nu niet meer nodig
 	delete DX9;
 	DX9 = nullptr;
+
+
 
 	Scherm.Bereken_Grid();					//stel de hoeveelheid leds in die worden gebruikt en bereken Grid Grootte
 
@@ -229,11 +233,10 @@ int main()
 	// maak een thread die nu nog niks doet
 	std::thread *uart;
 	uart = new std::thread(send_data,SP,Rx_buffer,Scherm,&mtx);
-
 	int bright = 0;
 	while (exit == false)
 	{
-		
+				
 		if (GetAsyncKeyState(VK_END))						//Als escape is ingedrukt zet exit true
 		{
 			exit = true;

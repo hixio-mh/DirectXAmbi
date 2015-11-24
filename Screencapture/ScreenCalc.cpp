@@ -5,7 +5,7 @@ ScreenCalc::ScreenCalc(float Diago, UINT32 *DataSet, int hres, int vres, int Blo
 						int BlockH, int boven, int onder, int links, int rechts, int Black) 
 :Hres(hres), Vres(vres), LedData(NULL), BlockDepthHori(BlockH), BlockDepthVert(BlockV), Blok(NULL), 
 LedsBoven(boven), LedsOnder(onder), LedsLinks(links), LedsRechts(rechts), BlackLevel(Black), 
-GammaE(NULL), OldLedData(NULL), K_P(0.5)
+GammaE(NULL), OldLedData(NULL), K_P(0.8)
 {
 	double verhouding;
 	verhouding = (double)Hres / (double)Vres;
@@ -116,7 +116,7 @@ void ScreenCalc::Bereken()
 		//Dit zou nog in een aggressieve PID gedaan kunnen worden om een vloeiender effect te kunnen krijgen
 		
 		Gemiddelde(LedData + (i * 3), Blok[i].TLX, Blok[i].TLY, Blok[i].BRY, Blok[i].BRX);
-
+		
 		deltaR = LedData[i * 3] - OldLedData[i * 3];
 		deltaG = LedData[i * 3 + 1] - OldLedData[i * 3 + 1];
 		deltaB = LedData[i * 3 + 2] - OldLedData[i * 3 + 2];
@@ -171,6 +171,8 @@ void ScreenCalc::Gemiddelde(UINT8 *Led, int TopLeftX, int TopLeftY, int BottomRi
 		y = BottomRightY - (Vres - vborder);
 		BottomRightY = Vres - vborder;
 		TopLeftY -= y;
+		if (TopLeftY < 0)
+			TopLeftY = 0;
 	}
 	
 	for (x = TopLeftX; x < BottomRightX; x++)
@@ -183,14 +185,14 @@ void ScreenCalc::Gemiddelde(UINT8 *Led, int TopLeftX, int TopLeftY, int BottomRi
 			}
 			else
 			{
-
 				b += ((PixelData[x + y*Hres] >> 0) & 0xFF);
 				g += ((PixelData[x + y*Hres] >> 8) & 0xFF);
 				r += ((PixelData[x + y*Hres] >> 16) & 0xFF);
 				j++;
 				
+				
 			}
-
+			
 			
 		}
 	}
@@ -292,6 +294,12 @@ int ScreenCalc::Calc_Aspect_ratio()
 	{
 		vborder = vOffset;
 	}
+	
+	COORD topLeft = { 0, 12 };
+	SetConsoleCursorPosition(console, topLeft);
+	std::cout << "Vertical offset: " << vborder << "\t" << std::endl;
+	std::cout << "Horizontal offset: " << hborder << "\t" << std::endl;
+
 	return 0;
 }
 
@@ -303,11 +311,10 @@ void ScreenCalc::Calc_Side_border()
 	//daarna zoekt deze een zwarte balk
 	//deze functie werkt alleen als de video player niet pixelwaarde 0,0,0 als zwart gebruikt
 	int x = 0, y = 0;
-	int xmax = 0;
-	int nY = 0;
+	int xmin = Hres;
 	while (y < Vres)
 	{
-		while ((((PixelData[(y * Hres) + x] >> 16) & 0xFF) * 256 == 0)&(((PixelData[(y * Hres) + x] >> 8) & 0xFF) * 256 == 0)&(((PixelData[(y * Hres) + x] >> 0) & 0xFF) * 256 == 0))
+		while ((PixelData[(y * Hres) + x] & 0xFFFFFF) * 256 == 0)
 		{
 			x++;
 			if (x == Hres)
@@ -316,23 +323,14 @@ void ScreenCalc::Calc_Side_border()
 				x = 0;
 			}
 		}
-		y++;
-		if (xmax < x)
-		{
-			nY = 1;
-			xmax = x;
-		}
-		else if (xmax == x)
-			nY++;
-	}
-	
+		
+		if (x < xmin)
+			xmin = x;
 
-	
-	
-	if (nY == Vres)
-	{
-		hborder = xmax;
+		y++;
+		x = 0;
 	}
+	hborder = xmin;
 }
 
 void ScreenCalc::Calc_Top_border()
@@ -343,11 +341,10 @@ void ScreenCalc::Calc_Top_border()
 	//daarna zoekt deze een zwarte balk
 	//deze functie werkt alleen als de video player niet pixelwaarde 0,0,0 als zwart gebruikt
 	int x = 0, y = 0;
-	int ymax = 0;
-	int nX = 0;
+	int ymin = Vres;
 	while (x < Hres)
 	{
-		while ((((PixelData[(y * Hres) + x] >> 16) & 0xFF) * 256 == 0)&(((PixelData[(y * Hres) + x] >> 8) & 0xFF) * 256 == 0)&(((PixelData[(y * Hres) + x] >> 0) & 0xFF) * 256 == 0))
+		while ((PixelData[(y * Hres) + x] & 0xFFFFFF) * 256 == 0)
 		{
 			y++;
 			if (y == Vres)
@@ -356,24 +353,11 @@ void ScreenCalc::Calc_Top_border()
 				y = 0;
 			}
 		}
+
+		if (y < ymin)
+			ymin = y;
 		x++;
-		if (ymax < y)
-		{
-			nX = 1;
-			ymax = y;
-		}
-		else if (ymax == y)
-			nX++;
 		y = 0;
 	}
-
-
-
-
-	if (nX == Hres)
-	{
-		vborder = ymax;
-	}
-	else if (nX == 1)
-		vborder = 0;
+	vborder = ymin;
 }

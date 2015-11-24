@@ -70,5 +70,7 @@ private:
 
 	//Gamma correction lookup table
 	int *GammaE;
+
+	HANDLE console = GetStdHandle(STD_OUTPUT_HANDLE);
 };
 
