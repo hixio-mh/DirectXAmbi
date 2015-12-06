@@ -180,7 +180,9 @@ void ScreenCalc::Gemiddelde(UINT8 *Led, int TopLeftX, int TopLeftY, int BottomRi
 		for (y = TopLeftY; y < BottomRightY; y++)
 		{
 			//Als het bijna puur zwart is sla je hem over bij gemiddelde berekening
-			if ((((PixelData[x + y*Hres] >> 0) & 0xFF) < BlackLevel) && (((PixelData[x + y*Hres] >> 8) & 0xFF) < BlackLevel) && (((PixelData[x + y*Hres] >> 16) & 0xFF) < BlackLevel))
+			if ((((PixelData[x + y*Hres] >> 0) & 0xFF) < BlackLevel) && 
+				(((PixelData[x + y*Hres] >> 8) & 0xFF) < BlackLevel) && 
+				(((PixelData[x + y*Hres] >> 16) & 0xFF) < BlackLevel))
 			{
 			}
 			else
@@ -246,6 +248,7 @@ UINT8 *ScreenCalc::GeefLedPointer()
 
 void ScreenCalc::set_Gamma(float Gamma)
 {
+	//Deze functie creeert een gamma lookup table
 	for (int i = 0; i < 256; i++)
 	{
 		GammaE[i] = ((float)pow((float)((float)i / 255), (float)((float)1 / Gamma))) * (float)255;

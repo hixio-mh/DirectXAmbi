@@ -28,6 +28,7 @@ public:
 
 private:
 
+	int InterfaceNumber;
 	bool GetFrame();
 	void initdup(UINT IntNumber);
 	void ReleaseFrame();

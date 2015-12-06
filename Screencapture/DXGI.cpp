@@ -26,7 +26,7 @@ void DXGI::init(UINT IntNumber)
 {
 
 	// Define temporary pointers to a device and a device context
-
+	InterfaceNumber = IntNumber;
 	// Create the device and device context objects
 	D3D11CreateDevice(
 		nullptr,
@@ -152,14 +152,19 @@ bool DXGI::GetFrame()
 	HRESULT hr = DeskDupl->AcquireNextFrame(500, &FrameInfo, &DesktopResource);
 	if (FAILED(hr))
 	{
-		
+		Sleep(2000);
 		if (hr == 0x887A0027)
 		{
 			std::cout << "Nothing changed \r";
 		}
+		else if (hr == 0x887a0026)
+		{
+			std::cout << "Device lost. Reinitializing. Error code 0x" << std::hex << hr << std::endl;
+			init(InterfaceNumber);
+		}
 		else
 		{
-			std::cout << "acquire frame failed with" << std::hex << hr << std::endl;
+			std::cout << "acquire frame failed with: 0x" << std::hex << hr << std::endl;
 		}
 		return false;
 	}

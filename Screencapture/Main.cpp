@@ -230,6 +230,7 @@ int main()
 	UINT8 *pointer=NULL;						//Pointer voor de led bitstream
 
 	pointer = Scherm.GeefLedPointer();	//Koppel de led bitstream aan de pointer
+
 	// maak een thread die nu nog niks doet
 	std::thread *uart;
 	uart = new std::thread(send_data,SP,Rx_buffer,Scherm,&mtx);
