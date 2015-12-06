@@ -1,11 +1,23 @@
 #include "ScreenCalc.h"
 #include <iostream>
 
-ScreenCalc::ScreenCalc(float Diago, UINT32 *DataSet, int hres, int vres, int BlockV, 
-						int BlockH, int boven, int onder, int links, int rechts, int Black) 
-:Hres(hres), Vres(vres), LedData(NULL), BlockDepthHori(BlockH), BlockDepthVert(BlockV), Blok(NULL), 
-LedsBoven(boven), LedsOnder(onder), LedsLinks(links), LedsRechts(rechts), BlackLevel(Black), 
-GammaE(NULL), OldLedData(NULL), K_P(0.8)
+
+ScreenCalc::ScreenCalc(float Diago, UINT32 *DataSet, int hres, int vres, int BlockV,
+	int BlockH, int boven, int onder, int links, int rechts, int Black)
+	:Hres(hres)
+	, Vres(vres)
+	, LedData(NULL)
+	, BlockDepthHori(BlockH)
+	, BlockDepthVert(BlockV)
+	, Blok(NULL)
+	, LedsBoven(boven)
+	, LedsOnder(onder)
+	, LedsLinks(links)
+	, LedsRechts(rechts)
+	, BlackLevel(Black)
+	, GammaE(NULL)
+	, OldLedData(NULL)
+	, K_P(0.8)
 {
 	double verhouding;
 	verhouding = (double)Hres / (double)Vres;
@@ -13,25 +25,45 @@ GammaE(NULL), OldLedData(NULL), K_P(0.8)
 	Lengte = Hoogte * verhouding;
 	PixelData = DataSet;
 	LedAantal = LedsBoven + LedsLinks + LedsRechts + LedsOnder;
-	OldLedData = new UINT8[LedAantal*3];	//Voor PID
+	OldLedData = new UINT8[LedAantal * 3];	//Voor PID
 	ZeroMemory(OldLedData, LedAantal * 3);
 	GammaE = new int[256] {0};
 	Offset = new int[8] {0};
 	set_Brightness(BlackLevel);
+	Bereken_Grid();
+
+	//bouw threadPool
+#ifdef MULTITHREADED
+	//Deze mutex geeft aan dat de thread kan starten met data verwerken
+	startMutexPool = new std::mutex[10];
+	//deze mutex geeft aan dat de thread klaar is met data verwerken
+	readyMutexPool = new std::mutex[10];
+	threadPool = new std::thread*[10];
+
+	//maak alle threads aan en zorg dat ze hiervoor al gelockt zijn. er is namelijk nog geen werk voor ze
+	for (int i = 0; i < 10; i++)
+	{
+		std::cout << "Start word gelocked : " << i << "ID: " << GetCurrentThreadId() << std::endl;
+		startMutexPool[i].lock();
+		
+		*(threadPool + i) = new std::thread(ThreadedBereken, PixelData, Blok + i, startMutexPool + i, readyMutexPool +i);
+	}
+
+#endif
 }
 
 ScreenCalc::~ScreenCalc()
 {
 	//Ruim alles netjes op
-/*	delete[] LedData;
-	delete[] GammaE;
-	delete[] Blok;
+	/*	delete[] LedData;
+		delete[] GammaE;
+		delete[] Blok;
 
-	GammaE = nullptr;
-	PixelData = nullptr;
-	LedData = nullptr;
-	Blok = nullptr;
-*/
+		GammaE = nullptr;
+		PixelData = nullptr;
+		LedData = nullptr;
+		Blok = nullptr;
+		*/
 }
 
 void ScreenCalc::set_data(UINT32 *dataset)
@@ -41,7 +73,7 @@ void ScreenCalc::set_data(UINT32 *dataset)
 
 void ScreenCalc::Bereken_Grid()
 {
-	//Als Leds ongelijk is aan NULL dan moet je deze verwijderen omdat er dan al eentje bestaat. En we willen geen Memory Leaks :D
+	//Als Leds ongelijk is aan NULL dan moet je deze verwijderen omdat er dan al eentje bestaat. En we willen geen Memory Leaks 
 
 	if (LedData != NULL)
 	{
@@ -87,7 +119,7 @@ void ScreenCalc::Bereken_Grid()
 	led += Offset[3];
 	led += Offset[4];
 	//onderste rij van rechts naar links
-	for (i = Offset[4]; i < LedsOnder-Offset[5]; i++)
+	for (i = Offset[4]; i < LedsOnder - Offset[5]; i++)
 	{
 		Blok[led].TLX = Hres - (Hres*(i + 1)) / LedsOnder;	//
 		Blok[led].TLY = Vres - ((Vres*BlockDepthVert) / 100);
@@ -98,7 +130,7 @@ void ScreenCalc::Bereken_Grid()
 	led += Offset[5];
 	led += Offset[6];
 	//linker rij onder naar boven
-	for (j = Offset[6]; j < LedsLinks-Offset[7]; j++)
+	for (j = Offset[6]; j < LedsLinks - Offset[7]; j++)
 	{
 		Blok[led].TLX = 0;
 		Blok[led].TLY = Vres - (Vres*(j + 1)) / LedsLinks;
@@ -110,13 +142,13 @@ void ScreenCalc::Bereken_Grid()
 
 void ScreenCalc::Bereken()
 {
-	int deltaB,deltaG,deltaR;
+	int deltaB, deltaG, deltaR;
 	for (int i = 0; i < LedAantal; i++)
 	{
 		//Dit zou nog in een aggressieve PID gedaan kunnen worden om een vloeiender effect te kunnen krijgen
-		
+
 		Gemiddelde(LedData + (i * 3), Blok[i].TLX, Blok[i].TLY, Blok[i].BRY, Blok[i].BRX);
-		
+
 		deltaR = LedData[i * 3] - OldLedData[i * 3];
 		deltaG = LedData[i * 3 + 1] - OldLedData[i * 3 + 1];
 		deltaB = LedData[i * 3 + 2] - OldLedData[i * 3 + 2];
@@ -132,13 +164,12 @@ void ScreenCalc::Bereken()
 
 }
 
-
 void ScreenCalc::Gemiddelde(UINT8 *Led, int TopLeftX, int TopLeftY, int BottomRightY, int BottomRightX)
 {
 	int j = 0;
 	int r = 0, g = 0, b = 0;
 	int y, x;
-	
+
 	//zijkant correctie
 	if (TopLeftX < hborder)
 	{
@@ -147,7 +178,7 @@ void ScreenCalc::Gemiddelde(UINT8 *Led, int TopLeftX, int TopLeftY, int BottomRi
 		TopLeftX = hborder;
 		BottomRightX += x;
 	}
-	
+
 	if (Hres - hborder < BottomRightX)
 	{
 		//bereken het verschil
@@ -174,14 +205,14 @@ void ScreenCalc::Gemiddelde(UINT8 *Led, int TopLeftX, int TopLeftY, int BottomRi
 		if (TopLeftY < 0)
 			TopLeftY = 0;
 	}
-	
+
 	for (x = TopLeftX; x < BottomRightX; x++)
 	{
 		for (y = TopLeftY; y < BottomRightY; y++)
 		{
 			//Als het bijna puur zwart is sla je hem over bij gemiddelde berekening
-			if ((((PixelData[x + y*Hres] >> 0) & 0xFF) < BlackLevel) && 
-				(((PixelData[x + y*Hres] >> 8) & 0xFF) < BlackLevel) && 
+			if ((((PixelData[x + y*Hres] >> 0) & 0xFF) < BlackLevel) &&
+				(((PixelData[x + y*Hres] >> 8) & 0xFF) < BlackLevel) &&
 				(((PixelData[x + y*Hres] >> 16) & 0xFF) < BlackLevel))
 			{
 			}
@@ -191,11 +222,11 @@ void ScreenCalc::Gemiddelde(UINT8 *Led, int TopLeftX, int TopLeftY, int BottomRi
 				g += ((PixelData[x + y*Hres] >> 8) & 0xFF);
 				r += ((PixelData[x + y*Hres] >> 16) & 0xFF);
 				j++;
-				
-				
+
+
 			}
-			
-			
+
+
 		}
 	}
 
@@ -204,27 +235,28 @@ void ScreenCalc::Gemiddelde(UINT8 *Led, int TopLeftX, int TopLeftY, int BottomRi
 	if (j == 0)
 		j = 1;
 
-	g = g/ j;
-	b = b/ j;
-	r = r/j;
+	g = g / j;
+	b = b / j;
+	r = r / j;
 
 	if (g < BlackLevel)
 		Led[0] = 0;
-	else	
+	else
 		Led[0] = GammaE[g - brightness];
-		
+
 
 	if (r < BlackLevel)
 		Led[1] = 0;
 	else
-		Led[1] = GammaE[r-brightness];
+		Led[1] = GammaE[r - brightness];
 
 	if (b < BlackLevel)
 		Led[2] = 0;
 	else
-		Led[2] = GammaE[b- brightness];
-	
+		Led[2] = GammaE[b - brightness];
+
 }
+
 void ScreenCalc::set_Brightness(int bri)
 {
 	if (bri < 0)
@@ -234,7 +266,6 @@ void ScreenCalc::set_Brightness(int bri)
 	else
 		brightness = bri;
 }
-
 
 UINT16 ScreenCalc::geefLeds()
 {
@@ -274,14 +305,14 @@ void ScreenCalc::SetOffset(int *offset)
 void ScreenCalc::SethOffset(int offset)
 {
 
-		hOffset = offset;
+	hOffset = offset;
 
 }
 
 void ScreenCalc::SetvOffset(int offset)
 {
 
-		vOffset = offset;
+	vOffset = offset;
 
 }
 
@@ -297,12 +328,12 @@ int ScreenCalc::Calc_Aspect_ratio()
 	{
 		vborder = vOffset;
 	}
-	
+	/*
 	COORD topLeft = { 0, 12 };
 	SetConsoleCursorPosition(console, topLeft);
 	std::cout << "Vertical offset: " << vborder << "\t" << std::endl;
 	std::cout << "Horizontal offset: " << hborder << "\t" << std::endl;
-
+	*/
 	return 0;
 }
 
@@ -326,7 +357,7 @@ void ScreenCalc::Calc_Side_border()
 				x = 0;
 			}
 		}
-		
+
 		if (x < xmin)
 			xmin = x;
 
@@ -364,3 +395,42 @@ void ScreenCalc::Calc_Top_border()
 	}
 	vborder = ymin;
 }
+
+void ScreenCalc::update()
+{
+#ifdef MULTITHREADED
+	for(int i = 0; i < 10; i++)
+	{
+		std::cout << "Start word geunlocked : " << i << "ID: " << GetCurrentThreadId() << std::endl;
+		startMutexPool[i].unlock();
+	}
+	for (int i = 0; i < 10; i++)
+	{
+		std::cout << "ready word gelocked : " << i << "ID: "<< GetCurrentThreadId() << std::endl;
+		readyMutexPool[i].lock();
+	}
+		
+#else
+	this->Bereken();
+#endif
+
+}
+
+#ifdef MULTITHREADED
+void ScreenCalc::ThreadedBereken(UINT32 *ScreenData, Grid *Area, std::mutex *startmtx, std::mutex *readymtx)
+{
+	while (true)
+	{
+		std::cout << "Start word gelocked : " << GetCurrentThreadId() << std::endl;
+		startmtx->lock();
+		std::cout << "ready word gelocked : " << GetCurrentThreadId() << std::endl;
+		readymtx->lock();
+
+		Sleep(1000);
+		std::cout << "Ready word geunlocked : " << GetCurrentThreadId() << std::endl;
+		readymtx->unlock();
+
+	}
+	
+}
+#endif

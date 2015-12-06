@@ -29,7 +29,7 @@
 
 void CreateConfig(std::ofstream &file, Direct3DCap &cap);
 int *LedAmountTest(char *);
-void send_data(Serial* , char * , ScreenCalc &,std::mutex *);
+void send_data(Serial*, char *, ScreenCalc &, std::mutex *);
 void calc(ScreenCalc &);
 BOOL DisableAeroTheme();
 
@@ -39,7 +39,7 @@ UINT8 Thread_comm = 0x01;
 int main()
 {
 	bool exit = false;						//dit is voor later een escape variable
-	
+
 	float gamma = 0.6;
 	//define
 	Direct3DCap *DX9;
@@ -127,7 +127,7 @@ int main()
 		GDI->init(Config[0]);
 		pBits = GDI->pBits;
 		break;
-	
+
 	case D11_CAP:
 		DX11 = new DXGI;
 		DX11->init(Config[0]);
@@ -139,7 +139,7 @@ int main()
 	{
 		pBits = DX9->pBits;
 	}
-	
+
 
 	ScreenCalc Scherm(105,					//init de kleur bereken functies
 		pBits,			//De PixelData
@@ -159,10 +159,6 @@ int main()
 	delete DX9;
 	DX9 = nullptr;
 
-
-
-	Scherm.Bereken_Grid();					//stel de hoeveelheid leds in die worden gebruikt en bereken Grid Grootte
-
 	Scherm.set_Gamma(gamma);
 
 	//Het programma moet eerst 0xff binnen krijgen als dat het geval is dan mag die beginnen met het oversturen
@@ -176,7 +172,7 @@ int main()
 	temp[String.size()] = '\0';
 	Serial* SP = new Serial(temp);
 
-	
+
 
 	delete[] temp;
 	temp = nullptr;
@@ -227,22 +223,22 @@ int main()
 
 	std::cout << "Press END to quit capturing" << std::endl;
 
-	UINT8 *pointer=NULL;						//Pointer voor de led bitstream
+	UINT8 *pointer = NULL;						//Pointer voor de led bitstream
 
 	pointer = Scherm.GeefLedPointer();	//Koppel de led bitstream aan de pointer
 
 	// maak een thread die nu nog niks doet
 	std::thread *uart;
-	uart = new std::thread(send_data,SP,Rx_buffer,Scherm,&mtx);
+	uart = new std::thread(send_data, SP, Rx_buffer, Scherm, &mtx);
 	int bright = 0;
 	while (exit == false)
 	{
-				
+
 		if (GetAsyncKeyState(VK_END))						//Als escape is ingedrukt zet exit true
 		{
 			exit = true;
 		}
-		else if (GetAsyncKeyState(VK_F8)&OS==Windows7)
+		else if (GetAsyncKeyState(VK_F8)&OS == Windows7)
 		{
 			delete DX9;
 			pBits = GDI->pBits;
@@ -290,20 +286,20 @@ int main()
 		//start een thread die de data stuurt
 
 		//Maak screenshot en sla die op
-		
+
 		switch (cap_method)
 		{
 		case GDI_CAP:
 			GDI->capture();
 			mtx.lock();
-			Scherm.Bereken();
+			Scherm.update();
 			mtx.unlock();
 			Scherm.Calc_Aspect_ratio();
 			break;
 		case D3D_CAP:
 			DX9->capture();
 			mtx.lock();
-			Scherm.Bereken();
+			Scherm.update();
 			mtx.unlock();
 			Scherm.Calc_Aspect_ratio();
 			break;
@@ -311,18 +307,18 @@ int main()
 			if (DX11->capture())
 			{
 				mtx.lock();
-				Scherm.Bereken();
+				Scherm.update();
 				mtx.unlock();
 				Scherm.Calc_Aspect_ratio();
 			}
 			break;
 		}
-		
-		
+
+
 		//send_data(SP, Rx_buffer, Scherm);
 		//Scherm.Calc_Aspect_ratio();
 		//wacht tot alle data verzonden is en we weer antwoord hebben gehad dat alles in orde is voordat we weer verder gaan
-		
+
 	}
 	Thread_comm = 0;
 
@@ -341,13 +337,13 @@ void send_data(Serial* SP, char * Rx_buffer, ScreenCalc &Scherm, std::mutex *mtx
 		mtx->lock();
 		SP->WriteData((char*)Scherm.GeefLedPointer(), Scherm.geefLeds() * 3);	//Stuur alle data weg
 		mtx->unlock();
-			klok23 = clock();
-			SP->ReadData(Rx_buffer, 10);
-			while (Rx_buffer[0] != '1' || ((clock() - klok23) / CLOCKS_PER_SEC) > (float)0.5)		//Wacht tot arduino weer klaar is
-			{
-				SP->ReadData(Rx_buffer, 100);
-			}
-			Rx_buffer[0] = '0';
+		klok23 = clock();
+		SP->ReadData(Rx_buffer, 10);
+		while (Rx_buffer[0] != '1' || ((clock() - klok23) / CLOCKS_PER_SEC) > (float)0.5)		//Wacht tot arduino weer klaar is
+		{
+			SP->ReadData(Rx_buffer, 100);
+		}
+		Rx_buffer[0] = '0';
 
 	}
 }
@@ -420,7 +416,7 @@ void CreateConfig(std::ofstream &file, Direct3DCap &cap)
 	file << i << std::endl;
 
 	i = 0;
-	
+
 	file << j << std::endl;
 }
 
@@ -472,7 +468,7 @@ int *LedAmountTest(char *Comm)
 	static int leds[4] = { 0 }, i = 0;
 	int offset = 0;
 	leds[0]++;
-	while (i <4)
+	while (i < 4)
 	{
 		if (GetAsyncKeyState(VK_SPACE))						//Als escape is ingedrukt zet exit true
 		{
